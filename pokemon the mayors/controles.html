@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuste de controles</title>
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        input {
+            text-transform: capitalize;
+        }
+        input:focus {
+            background-color: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Ajusta tus controles</h1>
+        <ul>
+            <li>
+                Abrir menu pokemon: <input type="button" value="Q" id="KeyQ" onclick="key = 'KeyQ'" onblur="key = ''">
+            </li>
+            <li>Abrir menu de items: <input type="button" value="W" id="KeyW" onclick="key = 'KeyW'" onblur="key = ''"></li>
+            <li>Ajustar camara: <input type="button" value="E" id="KeyE" onclick="key = 'KeyE'" onblur="key = ''"></li>
+            <li>Primer movimiento: <input type="button" value="A" id="KeyA" onclick="key = 'KeyA'" onblur="key = ''"></li>
+            <li>Segundo movimiento: <input type="button" value="S" id="KeyS" onclick="key = 'KeyS'" onblur="key = ''"></li>
+            <li>Usar activa: <input type="button" value="D" id="KeyD" onclick="key = 'KeyD'"></li>
+            <li>Movimiento de mana o extra: <input type="button" value="F" id="KeyF" onclick="key = 'KeyF'" onblur="key = ''"></li>
+            <li>Basicos: <input type="button" value="Z" id="KeyZ" onclick="key = 'KeyZ'" onblur="key = ''"></li>
+            <li>Interaccion: <input type="button" value="X" id="KeyX" onclick="key = 'KeyX'"></li>
+            <li>Ultimate: <input type="button" value="C" id="KeyC" onclick="key = 'KeyC'" onblur="key = ''"></li>
+            <li>Mover derecha: <input type="button" value="Flecha derecha" id="ArrowRight" onclick="key = 'ArrowRight'" onblur="key = ''"></li>
+            <li>Mover izquierda: <input type="button" value="Flecha izquierda" id="ArrowLeft" onclick="key = 'ArrowLeft'" onblur="key = ''"></li>
+            <li>Mover abajo: <input type="button" value="Flecha abajo" id="ArrowDown" onclick="key = 'ArrowDown'" onblur="key = ''"></li>
+            <li>Mover arriba: <input type="button" value="Flecha arriba" id="ArrowUp" onclick="key = 'ArrowUp'" onblur="key = ''"></li>
+            <li>Atajo cambiar al primer pokemon: <input type="button" value="Coma" onclick="key = 'Comma'" onblur="key = ''"></li>
+            <li>Atajo cambiar al segundo pokemon: <input type="button" value="Punto" onclick="key = 'Period'" onblur="key = ''"></li>
+            <li>Atajo cambiar al tercer pokemon: <input type="button" value="Guion" onclick="key = 'Slash'" onblur="key = ''"></li>
+        </ul>
+        <input type="button" value="Guardar" onclick="changeLetter()">
+    </main>
+</body>
+<script>
+    window.onkeydown = teclaAbajo;
+    let teclas = {
+        KeyQ: "KeyQ",
+        KeyW: "KeyW",
+        KeyE: "KeyE",
+        KeyA: "KeyA",
+        KeyS: "KeyS",
+        KeyD: "KeyD",
+        KeyF: "KeyF",
+        KeyZ: "KeyZ",
+        KeyX: "KeyX",
+        KeyC: "KeyC",
+        ArrowDown: "ArrowDown",
+        ArrowLeft: "ArrowLeft",
+        ArrowRight: "ArrowRight",
+        ArrowUp: "ArrowUp",
+        Comma: "Comma",
+        Period: "Period",
+        Slash: "Slash"
+    }
+    if (localStorage.getItem("poke/teclas")) {
+        teclas = JSON.parse(localStorage.getItem("poke/teclas"))
+        for (let i = 0; i < Object.keys(teclas).length; i++) {
+            const key = Object.keys(teclas)[i];
+            document.getElementById(teclas[key]).value = key
+        }
+    }
+
+    let ajustes = {}
+    let key = ""
+    function teclaAbajo (cod) {
+        let code = cod.code
+        let keys = Object.keys(teclas)
+        ajustes = {}
+        if (key == "") {
+            return
+        }
+        if (teclas[code]) {
+            alert("Use teclas que no esten en uso")
+            key = ""
+            return
+        }
+        for (let i = 0; i < keys.length; i++) {
+            const element = keys[i];
+            if (teclas[element] == key) {
+                ajustes[code] = key
+            } else 
+            ajustes[element] = teclas[element]
+        }
+        teclas = ajustes
+        document.getElementById(key).value = cod.key
+        key = ""
+    }
+    function changeLetter() {
+        localStorage.setItem("poke/teclas", JSON.stringify(teclas))
+        alert("Controles guardados")
+    }
+</script>
+</html>
