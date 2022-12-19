@@ -60,9 +60,50 @@ var galeria = [
             "img/shuppet.webp",
             "img/shuppet.webp"
         ]
-    }
+    },
+    {//4
+        normal: "img/raticate.webp",
+        basico: "img/raticate.webp",
+        especial: "img/raticate.webp",
+        salto: "img/raticate.webp",
+        perder: "img/raticate.webp",
+        caida: "img/raticate.webp",
+        ulti: "img/raticate.webp",
+        mover: [
+            "img/raticate.webp",
+            "img/raticate.webp"
+        ]
+    },
+    chara("chara1"), //5
+    chara("chespin"), // 6
+    chara("quilladin"), // 7
+    chara("chesnaught"), // 8
+    chara("tepig"), // 9
+    chara("pignite", "webp"), // 10
+    chara("emboar", "webp"), // 11
+    chara("totodile", "webp"), //12
+    chara("croconaw", "webp"), //13
+    chara("feraligatr"), //14
+    chara("profesora"), //15
+    chara("Sylvan"), //16
+    chara("montañero"), //17
+    
 ]
-
+function chara(name, format="png") {
+    return {//4
+        normal: "img/"+name+"."+format,
+        basico: "img/"+name+"."+format,
+        especial: "img/"+name+"."+format,
+        salto: "img/"+name+"."+format,
+        perder: "img/"+name+"."+format,
+        caida: "img/"+name+"."+format,
+        ulti: "img/"+name+"."+format,
+        mover: [
+            "img/"+name+"."+format,
+            "img/"+name+"."+format
+        ]
+    }
+}
 var simbols = {
     area: "img/buffs/area.png",
     buff: "img/buffs/buff.png",

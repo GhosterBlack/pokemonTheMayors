@@ -1,0 +1,70 @@
+.casa, .tienda {
+    width: 50px;
+    height: 100px;
+    border: none;
+    box-shadow: 0px -100px 0px 1px rgb(112, 80, 10),
+                -50px -100px 0px 1px white,
+                -100px -100px 0px 1px white,
+                50px -100px 0px 1px white,
+                100px -100px 0px 1px white,
+                50px -150px 0px 1px skyblue,
+                -50px -150px 0px 1px skyblue,
+                100px -180px 0px 1px white,
+                50px -180px 0px 1px white,
+                0px -180px 0px 1px white,
+                -50px -180px 0px 1px white,
+                -100px -180px 0px 1px white,
+                100px -220px 0px 1px,
+                50px -220px 0px 1px,
+                0px -220px 0px 1px,
+                -50px -220px 0px 1px,
+                -100px -220px 0px 1px;
+
+}
+.casa {
+    color: brown
+}
+.tienda {
+    color: blue
+}
+.lab {
+    width: 50px;
+    height: 100px;
+    border: none;
+    box-shadow: 0px -100px 0px 1px rgb(112, 80, 10),
+                -50px -100px 0px 1px white,
+                -100px -100px 0px 1px white,
+                -150px -100px 0px 1px white,
+                50px -100px 0px 1px white,
+                100px -100px 0px 1px white,
+                150px -100px 0px 1px white,
+                50px -150px 0px 1px skyblue,
+                80px -150px 0px 1px skyblue,
+                -50px -150px 0px 1px skyblue,
+                -80px -150px 0px 1px skyblue,
+                150px -180px 0px 1px white,
+                100px -180px 0px 1px white,
+                50px -180px 0px 1px white,
+                0px -180px 0px 1px white,
+                -50px -180px 0px 1px white,
+                -100px -180px 0px 1px white,
+                -150px -180px 0px 1px white,
+                150px -220px 0px 1px,
+                100px -220px 0px 1px,
+                50px -220px 0px 1px,
+                0px -220px 0px 1px,
+                -50px -220px 0px 1px,
+                -100px -220px 0px 1px,
+                -150px -220px 0px 1px;
+    color: yellow
+}
+.mesa {
+    background-color: rgb(165, 108, 42);
+    
+}
+.compu {
+    background-color: aquamarine;
+    box-shadow: 0px 0px 0px 20px gray,
+                0px 40px 0px 17px gray;
+
+}

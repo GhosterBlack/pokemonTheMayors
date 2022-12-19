@@ -23,7 +23,7 @@ var app = (()=> {
     var ultiActivate = false
     let xScreen = 0;
     var restore = 0
-    public.mensaje = (textos=["..."], locker=false)=> {
+    public.mensaje = (textos=["..."], locker=false, pregunta=[])=> {
         if (public.mens){
             return
         }
@@ -33,6 +33,7 @@ var app = (()=> {
         body.appendChild(t)
         var i = 0
         var texto = textos[i];
+        texto = texto.replaceAll("@nick", gamer.nick)
         t.innerHTML = texto+" <br> <i> Preciona x para continuar </i>"
         accionTecla.KeyX_Down = ()=> {
             i++
@@ -40,6 +41,7 @@ var app = (()=> {
                 texto = textos[i];
                 t.innerHTML = texto+" <br> <i> Preciona x para continuar </i>"
             } else {
+                
                 t.remove()
                 lock = locker
                 public.mens = false
@@ -55,13 +57,18 @@ var app = (()=> {
         if (hab.caract.fun) {
             hab.caract.fun(null)
         }
+        if (hab.caract.cion) {
+            hab.caract.cion(null)
+        }
         gamer.method = null
         gamer.ultiComb = null
         gamer.ultiTime = null
         gamer.evo = 0;
+        gamer.h = 100
         jimi.innerHTML = ""
         tras.guardar = 0
         gamer = Object.assign(gamer, personajes[nombre])
+        cargarPasiva(nombre)
         if(gamer.clan)
         gamer.tipos = tipos(gamer.clan)
         loadSystem(personajes[nombre])
@@ -101,12 +108,13 @@ var app = (()=> {
         }
     }
     var gamer = {
-        nombre: "shuppet",
-        exp: 0,
+        nombre: "chara",
         restore: 5,
+        nick: "Alex",
         stund: false,
         regen: 1,
         nivel: 0,
+        zona: 0,
         estado: 0,
         objetos: [4, 2],
         obj: 0,
@@ -121,7 +129,7 @@ var app = (()=> {
         hab: 1,
         combCount: 0,
         activate: false,
-        personajes: ["shuppet"],
+        personajes: ["chara"],
         equipo: [],
         vidas: [],
         buffs: {
@@ -139,6 +147,22 @@ var app = (()=> {
             res: 1,
             raf: 1
         },
+        pasiva: {
+            vel: 1,
+            atq: 1,
+            shield: 1,
+            vat: 1,
+            salto: 1,
+            caida: 1,
+            def: 1,
+            crit: 1,
+            regen: 1,
+            res: 1,
+            raf: 1,
+            efectos: []
+
+        },
+        exp: {},
         potens: [],
         timer: 0,
         tipos: {},
@@ -146,81 +170,101 @@ var app = (()=> {
         poderes: [0, 1],
         sprs: 0,
         count: [0, 0, 0],
+        version: 1,
         flags: []
     }
+    const version = 1
     var criaturas = []
     var mods = []
     var saltos = true
     var save = localStorage.getItem("poke")
-    var save2 = localStorage.getItem("crias")
+    var pasivas = localStorage.getItem("crias") || "{}"
     if (save) {
         gamer = Object.assign(gamer, JSON.parse(save))
-       
+        gamer.nick = localStorage.getItem("poke/nick") || "Alex"
+        
     }
-    if (save2) {
-        save2 = JSON.parse(save2) 
-        for (let i = 0; i < save2.length; i++) {
-            const datos = save2[i];
-            // especie = [especie, salud, obj, nombre, nivel]
-            aggCria(datos)
+    if (gamer.version != version) {
+        localStorage.removeItem("poke")
+        save = null
+    }
+    if (pasivas) {
+        pasivas = JSON.parse(pasivas) 
+        /* 
+        banette =[{
+            nombre: "marinette",
+            codigo: 00001,
+            nivel: 1,
+            select: true,
+            activa: 0,
+            [index de pasiva, nivel de pasiva]
+            pasivas: [1, 5, 3, 6, 4, 2],
+        }]
+        */
 
-        }
     }
-    function aggCria(datos) {
-        let especie = entidades[datos[0]]
-            if (especie[4]) {
-                if (datos[4] >= especie[4].nivel) {
-                    datos[0] = especie[4].evo
-                    especie = entidades[especie[4].evo]
+    function cargarPasiva(nombre) {
+        let pasiva = pasivas[nombre]
+        gamer.pasiva = {
+            vel: 1,
+            atq: 1,
+            shield: 1,
+            vat: 1,
+            salto: 1,
+            caida: 1,
+            def: 1,
+            crit: 1,
+            regen: 1,
+            res: 1,
+            raf: 1,
+            efectos: []
+        }
+        if (pasiva) {
+            const emblema = emblemas[nombre]
+            const keys = Object.keys(emblema.stats)
+            let select;
+            for (let i = 0; i < pasiva.length; i++) {
+                const pas = pasiva[i];
+                if (pas.select) {
+                    select = pas
+                    for (let j = 0; j < pas.pasivas.length; j+=2) {
+                        const p = emblema.movs[pas.pasivas[j]];
+                        const k = Object.keys(p)
+                        const v = pas.pasivas[j+1];
+                        if (pas.activa == pas.pasivas[j] && (p.min < pas.nivel || !p.min) ) {
+                            if(p.activa)
+                            gamer.poderes[2] = p.activa
+                        }
+                        for (let l = 0; l < k.length; l++) {
+                            const stat = k[l];
+                            if(stat != "pasiva"){
+                                if(gamer.pasiva[stat])
+                                gamer.pasiva[stat] += p[stat] * parseFloat(v) 
+                                
+                            }
+                            else if((p.min <= pas.nivel || !p.min) && p.pasiva)
+                            gamer.pasiva.efectos.push(p.pasiva)
+                        }
+                    }
                 }
             }
-            let cria = {
-                vida: especie[0].vida || 10,
-                salud: datos[1],
-                obj: datos[2],
-                alias: datos[3],
-                stat: {
-                    vel: especie[0].vel || 1,
-                    salto: especie[0].salto || 1,
-                    caida: especie[0].caida || 1,
-                    def: especie[0].def || 1,
-                    atq: especie[0].atq || 1,
-                    color: especie[0].color || "white",
-                    raf: especie[0].raf || 1,
-                    res: especie[0].res || 1,
-                },
-                regen: especie[0].regen || 1,
-                hab: especie[0].hab || 0,
-                tipos: especie[1],
-                sprs: especie[2],
-                poderes: especie[3],
-                exp: datos[4],
-                especie: datos[0],
-                h: especie[0].h || 100,
-                w: especie[0].w || 50,
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const value = emblema.stats[key];
+                gamer.pasiva[key] += value * (select.nivel)
             }
-            if (especie[0].infante) {
-                cria.stat.infante = true
-            }
-
-            criaturas.push(cria)
+        }
     }
+    
     if (gamer.nivel == 0) {
         lock = true
         pantalla.remove();
         mini.remove()
         var texto = [
-            "Bienvenido a este pequeño mundillo de pokemon",
-            "No tengo que explicarte que es un pokemon claro esta",
-            "Te doy la bienvenida, pero que sepas que esto no es un juego rpg normal de pokemon",
-            "Apareceras en un mapa en el que te podras mover por las diferentes ciudades del juego",
-            "Podras entrar en ellas completar misiones y vencer a los lideres de gimnasio",
-            "Ya sabes pues, pero te recomiendo mejor primero entrar en los bosques, busca derrotar pokemon",
-            "Si encuentras a un jefe y lo derrotas obtendras dicha especie de pokemon como pokemon jugable",
-            "Completa las misiones pokemon para evolucionarlos y mejorarlos",
-            "En los bosques tambien encontraras objetos de batalla y mejoras.",
-            "Sin mas, espero que disfrutes."
-            
+           gamer.nick+": Vaya, un dia mas...",
+           "Hoy tenia que hacer algo... ¿Que era?",
+           "Cierto... La prof. Dana me habia pedido que fuera a su laboratorio",
+           "¡POR ARCEUS! Hoy tendre mi primer pokemon." 
         ];
         var i = 0;
         var nodo = document.createElement("h1")
@@ -238,6 +282,7 @@ var app = (()=> {
         gamer.nivel = 1
         localStorage.setItem("poke",JSON.stringify(gamer))
     }
+   
     let gw, gh
     if (gamer.w) {
         gw = gamer.w
@@ -283,7 +328,7 @@ var app = (()=> {
     var ulti = document.getElementById("move3")
     var extra = document.getElementById("move5")
     public.actualizar(gamer.nombre)
-    levelLoad(0)
+    levelLoad(gamer.zona)
     
     function cargaDem() {
         let d = poderes[gamer.poderes[0]].count || 5
@@ -337,11 +382,8 @@ var app = (()=> {
             return
         }
         //gamer.x -= gamer.stat.vel * 10
-        if(!gamer.stat.iv)
-        jugador.firstChild.style.transform = "rotateY(180deg)"
-        else 
         jugador.firstChild.style.transform = ""
-        x = 0-((gamer.stat.vel*gamer.buffs.vel)*20)
+        x = 0-((gamer.stat.vel*gamer.buffs.vel*gamer.pasiva.vel)*20)
         if (!teclas.left) {
             if (move == true) {
                 moveBoo = true
@@ -355,11 +397,9 @@ var app = (()=> {
             return
         }
         //gamer.x += gamer.stat.vel * 10
-        if(gamer.stat.iv)
         jugador.firstChild.style.transform = "rotateY(180deg)"
-        else 
-        jugador.firstChild.style.transform = ""
-        x = ((gamer.stat.vel*gamer.buffs.vel)*20)
+       
+        x = ((gamer.stat.vel*gamer.buffs.vel*gamer.pasiva.vel)*20)
         if (!teclas.right) {
             if (move == true) {
                 moveBoo = true
@@ -397,7 +437,7 @@ var app = (()=> {
         }
         if (saltos == true)  {
             //gamer.y -= 120
-            y = 0-((gamer.stat.vel*gamer.buffs.vel)*20)
+            y = 0-((gamer.stat.vel*gamer.buffs.vel*gamer.pasiva.vel)*20)
             if (!teclas.top) {
                 if (move == true) {
                     moveBoo =true
@@ -426,7 +466,7 @@ var app = (()=> {
                         moveBoo =true
                     }
                     move = true  
-                    y = ((gamer.stat.vel*gamer.buffs.vel)*20)
+                    y = ((gamer.stat.vel*gamer.buffs.vel*gamer.pasiva.vel)*20)
                     teclas.down = true
                 }
                 
@@ -448,7 +488,7 @@ var app = (()=> {
         if(lock == false){
             aggCount("z")
             if (poderes[gamer.poderes[0]].carga  && teclaS == 0) {
-                if (gamer.count[1]>=poderes[gamer.poderes[1]].count) {
+                if (gamer.count[0]>=poderes[gamer.poderes[0]].count) {
                     if (teclaA == 0) {
                         var ac = activatePower(poderes[gamer.poderes[0]])
                         let sA = setInterval(() => {
@@ -533,6 +573,13 @@ var app = (()=> {
         return false
         
    }
+   function evolucion(nombre="") {
+        let salud = gamer.salud
+        let carga = ultiActivate
+        public.actualizar(nombre)
+        gamer.salud = salud
+        gamer.ultiActivate = carga
+   }
    function desactivatePower(poder = poderes[0]) {
         if (poder.changes ) {
             for (let i = 0; i < poder.changes.length; i+=2) {
@@ -559,13 +606,17 @@ var app = (()=> {
                     var mejora = gamer.canal.mejora || "regen"
                     var poder = {
                         damage: gamer.canal.damage || 0,
-                        distancia: gamer.canal.dis || 5,
+                        distancia: gamer.canal.dis || 2,
                         estado: {[mejora]: (gamer.canal.poten || 2), timer: 10},
                         mana: gamer.canal.mana2 || 20,
                         tele: gamer.canal.tele || 0,
-                        vis: visses[0]
                     }
-                    poder.anim = gamer.canal.anim || "<div class='flecha'></div>"
+                    if (gamer.canal.dis) {
+                        poder.anim = gamer.canal.anim || "<div class='flecha'></div>"
+                    }
+                    if (!gamer.canal.dis || gamer.canal.tail) {
+                        poder.tail = gamer.canal.tail || "def" 
+                    }
                     if (gamer.canal.especial && gamer.mana > poder.mana) {
                         especiale++
                         let canal = gamer.canal.especial
@@ -604,7 +655,7 @@ var app = (()=> {
                     ataque(gamer, false, poder)
                     habMana = false
                     extra.style.backgroundColor = ""
-                    var timeout = (gamer.canal.count * 100) || 20000
+                    var timeout = (gamer.canal.count * 1000) || 200000
                     extra.style.boxShadow = ""
 
                     extra.animate([
@@ -1050,7 +1101,7 @@ var app = (()=> {
                         for (let i = 0; i < keys.length; i++) {
                             const key = keys[i];
                             if (key == "salud") {
-                                gamer[key] *= obj.caract[key]
+                                gamer[key] += gamer.vida * (obj.caract[key]/100)
                             } else
                             gamer[key] = obj.caract[key]
                         }
@@ -1201,16 +1252,9 @@ var callendo = false
                     callendo = true
 
                 }
-                if (clases.includes("meta")) {
-                   gamer.nivel += 1
-                   levelLoad(0)
-                   if (gamer.method == 1) {
-                        gamer.evo = 0
-                   }
-                   localStorage.setItem("poke", JSON.stringify(gamer)) 
-                }
+                
                 if (clases.includes("teleport")) {
-                    levelLoad(gamer.nivel)
+                   // levelLoad(gamer.nivel)
                 }
                 if (clases.includes("Auch")) {
                     gamer.tiempo = 10
@@ -1219,10 +1263,22 @@ var callendo = false
                 if (clases.includes("accion")) {
                     acciones[clases[2]](gamer, mods, 0)
                 }
-                if (clases.includes("wrap")) {
+                if (clases.includes("oculto")) {
+                    gamer.visible = false
+                } else {
+                    gamer.visible = true
+                }
+                if (clases.includes("wrap") && clases[2] != "none") {
                     levelLoad(clases[2])
                     gamer.x = niveles[clases[2]].x || 100
                     gamer.y = niveles[clases[2]].y || 400
+                    
+                }
+                if (clases.includes("puerta") && clases[2] != "none") {
+                    levelLoad(clases[2])
+                    gamer.x = clases[3]
+                    gamer.y = clases[4]
+                    accionTecla.KeyE_Down()
                     
                 }
                 if (clases.includes("load")) {
@@ -1323,7 +1379,9 @@ var callendo = false
                     if (key == "salud") {
                         if(restore >= gamer.restore)
                         gamer[key] *= hab.caract[key]
-                    } else
+                    } else if (typeof(gamer[key]) == "object")
+                    gamer[key] = Object.assign(gamer[key], hab.caract[key])
+                    else
                     gamer[key] = hab.caract[key]
 
                 }
@@ -1352,7 +1410,7 @@ var callendo = false
     accionTecla.Slash_Up = ()=> {
         cambioPersonaje(2)
     }
-    public.keyQ2 = 30
+    public.keyQ2 = 10
     function cambioPersonaje(i) {
         if (i >= gamer.equipo.length || keyQ > 0) {
             return
@@ -1367,9 +1425,9 @@ var callendo = false
         gamer.count = [100, 100, 100]
         ultiActivate = carga
         verificar()
-        if (gamer.rol != "asistente")
+        if (gamer.rol != "entrenador" && gamer.rol != "auxiliar")
         keyQ = public.keyQ2
-        public.keyQ2 = 30
+        public.keyQ2 = 10
         let q = setInterval(() => {
             if (keyQ < 1) {
                 window.clearInterval(q)
@@ -1383,30 +1441,98 @@ var callendo = false
         }, 1000);
                             
     }
+    let accTeclas = {
+        KeyQ: "KeyQ",
+        KeyW: "KeyW",
+        KeyE: "KeyE",
+        KeyA: "KeyA",
+        KeyS: "KeyS",
+        KeyD: "KeyD",
+        KeyF: "KeyF",
+        KeyZ: "KeyZ",
+        KeyX: "KeyX",
+        KeyC: "KeyC",
+        ArrowDown: "ArrowDown",
+        ArrowLeft: "ArrowLeft",
+        ArrowRight: "ArrowRight",
+        ArrowUp: "ArrowUp",
+        Comma: "Comma",
+        Period: "Period",
+        Slash: "Slash"
+    }
+    if (localStorage.getItem("poke/teclas")) {
+        accTeclas = JSON.parse(localStorage.getItem("poke/teclas"))
+    }
     function teclaAbajo(key) {
         var tecla = key.code
         // console.log(tecla)
-        if (accionTecla[tecla+"_Down"]) {
-            accionTecla[tecla+"_Down"]()
+        if (accionTecla[accTeclas[tecla]+"_Down"]) {
+            accionTecla[accTeclas[tecla]+"_Down"]()
         }
     }
     function teclaArriba(key) {
         var tecla = key.code;
-        if (accionTecla[tecla+"_Up"]) {
-            accionTecla[tecla+"_Up"]()
+        if (accionTecla[accTeclas[tecla]+"_Up"]) {
+            accionTecla[accTeclas[tecla]+"_Up"]()
         }
     }
+    function buscarRol(rol) {
+        let pokemon = ["ofensivo", "defensivo", "equilibrado", "agil", "auxiliar"]
+        for (let i = 0; i < app.gamer.equipo.length; i++) {
+            const equipo = personajes[app.gamer.equipo[i]];
+            if (rol == "pokemon") {
+                if (pokemon.includes(equipo.rol)) {
+                    return i
+                }
+            } else
+            if (equipo.rol == rol) {
+                return i
+            }
+        }
+        return -1
+    }
     function levelLoad(n) {
+        let antes = nivel
+        if(typeof(n) == "object")
+        nivel = n
+        else
+        nivel = niveles[n]
+        if (nivel.ciudad == true && gamer.rol != "entrenador") {
+            let rol = buscarRol("entrenador")
+            if (rol > -1) {
+                cambioPersonaje(rol)
+            } else {
+                nivel = antes
+                return
+            }
+        }
+        if (nivel.batalla && gamer.rol == "entrenador") {
+            let rol = buscarRol("pokemon")
+            if (rol > -1) {
+                cambioPersonaje(rol)
+            } else {
+                nivel = antes
+                return
+            }
+        }
+        if (nivel.guardado) {
+            gamer.zona = n
+            if (gamer.method == 1) {
+                 gamer.evo = 0
+            }
+            localStorage.setItem("poke", JSON.stringify(gamer)) 
+        }
         pantalla.innerHTML = ""
         for (let i = 0; i < mods.length; i++) {
             const mod = mods[i];
-            if(mod.stat)
-            mod.stat.salud = 0
+            if(mod.stat){
+                mod.stat.salud = 0
+                mod.stat.vida = 0
+            }
         }
         mods = []
         ubicacion = []
         bloqueos = []
-        nivel = niveles[n]
         gamer.x = nivel.x || 100
         gamer.y = nivel.y || 650
         move = true
@@ -1415,10 +1541,8 @@ var callendo = false
         pantalla.style.backgroundColor = nivel.color
         if (nivel.image) {
             pantalla.style.backgroundImage = "url("+nivel.image+")"
-            
         }
         pantalla.style.width = nivel.largo+"px"
-
         for (let i = 0; i < nivel.pisos.length; i++) {
             const element = nivel.pisos[i];
             var color = nivel.piso
@@ -1437,35 +1561,40 @@ var callendo = false
                     ubicacion[element[2]+h] = []
                 }
                 for (let j = 0; j < element[0]; j++) {
-                   
-                    if (ubicacion[element[2]+h][element[3]+j]) {
-                        ubicacion[element[2]+h][element[3]+j].push(clase)
-                        
-                    } else {
-                        ubicacion[element[2]+h][element[3]+j] = [clase]
+                    if (!ubicacion[element[2]+h][element[3]+j]) {
+                        ubicacion[element[2]+h][element[3]+j] = []
                     }
-                    if (clase != "piso") {
-                        ubicacion[element[2]+h][element[3]+j].push("piso")
-                        
+                    ubicacion[element[2]+h][element[3]+j][0] = "piso"
+                    ubicacion[element[2]+h][element[3]+j][1] = clase
+                    if (wraps.includes(clase)) {
+                        ubicacion[element[2]+h][element[3]+j][1] = "wrap"
                     }
-                    if (h < 70) {
-                        ubicacion[element[2]+h][element[3]+j].push("bordeTop")
+                    if (puertas.includes(clase)) {
+                        ubicacion[element[2]+h][element[3]+j][1] = "puerta"
+                    }
+                    if (h < 70 && i == 0) {
+                        ubicacion[element[2]+h][element[3]+j][1] = "bordeTop"
                     } 
-                    if (h > height-70) {
-                        ubicacion[element[2]+h][element[3]+j].push("bordeMid")
+                    if (h > height-70 && i == 0) {
+                        ubicacion[element[2]+h][element[3]+j][1] = "bordeMid"
                     }
                     if (clase == "accion") {
-                        if(element[5])
+                        if(element[6])
                         ubicacion[element[2]+h][element[3]+j][2] = element[6] 
                         else
                         ubicacion[element[2]+h][element[3]+j][2] = 0
                     }
-                    if (clase == "wrap" || clase == "load") {
+                    if (wraps.includes(clase) || clase == "load") {
                         if(element[6]) {
                             ubicacion[element[2]+h][element[3]+j][2] = element[6]
                         } else 
                         ubicacion[element[3]+h][element[3]+j][2] = 0
 
+                    }
+                    if (puertas.includes(clase)) {
+                        ubicacion[element[2]+h][element[3]+j][2] = element[6]
+                        ubicacion[element[2]+h][element[3]+j][3] = element[7]
+                        ubicacion[element[2]+h][element[3]+j][4] = element[8]
                     }
                     
                 }
@@ -1476,7 +1605,6 @@ var callendo = false
 
             pantalla.append(nodo)
         }
-       
         for (let i = 0; i < nivel.npcs.length; i++) {
             const modInfo = nivel.npcs[i];
             let mod = npc(modInfo[0], modInfo[1], modInfo[2], modInfo[3], modInfo[4], modInfo[5])
@@ -1487,12 +1615,14 @@ var callendo = false
             mod.restore = 0
             var atackMod = []
             let sMods = setInterval(() => {
+                
                 if(mod.stat.salud < mod.stat.vida)
                 mod.restore += 0.1
                 if (lock == false) {
                     for (let a = 0; a < mod.poderes.length; a++) {
                         mod.count[a] += 0.1*mod.buffs.salto
                     }
+                   
 
                     let paredes = bloqueos[Math.round(mod.y+50)]
                     if (paredes && mod.ofMove > 1) {
@@ -1505,7 +1635,7 @@ var callendo = false
                             mod.x -= 50*modDirec
                         }
                     }
-                    let clases = Math.round(mod.y+100)
+                    let clases = ubicacion[Math.round(mod.y+100)]
                         
                         if (clases) {
                             clases = ubicacion[Math.round(mod.y+100)][Math.round(mod.x+24)]
@@ -1514,6 +1644,11 @@ var callendo = false
                                 if (clases.includes("piso")) {
                                     mod.pisar = true
                                 } 
+                                if (clases.includes("oculto")) {
+                                    mod.visible = false
+                                } else {
+                                    mod.visible = true
+                                }
                             } 
                         } else {
                             mod.pisar = false
@@ -1549,15 +1684,10 @@ var callendo = false
                             }
                         )
                         if (mod.x-mod.pasoX < 0) {
-                            if(!gamer.stat.iv)
-                            mod.spr.firstChild.style.transform = "rotateY(180deg)"
-                            else 
+                            
                             mod.spr.firstChild.style.transform = ""
                         } else {
-                            if(gamer.stat.iv)
                             mod.spr.firstChild.style.transform = "rotateY(180deg)"
-                            else 
-                            mod.spr.firstChild.style.transform = ""
                         }
                         if (mod.x-mod.pasoX != 0) {
                             pasos++
@@ -1605,7 +1735,7 @@ var callendo = false
                                 limpiar = false
                                 potencia.timer -= 0.1
                                 if (i < mod.potens.length-1) {
-                                    mod.potens[i+1] += 2
+                                    mod.potens[i+1].timer += 2
                                 }
                             } else {
                                 if (potencia.timer <= 0 && !potencia.fin) {
@@ -1633,7 +1763,7 @@ var callendo = false
                             mod.timer = 1
                         }
                     }
-                    if (mod.buffs.visible < 1) {
+                    if (mod.buffs.visible < 1 || mod.visible == false) {
                         mod.spr.style.visibility = "hidden"
                     } else {
                         mod.spr.style.visibility = ""
@@ -1682,18 +1812,38 @@ var callendo = false
                         if (mod.barraVida) {
                             mod.barraVida.firstChild.style.width = 0+"%"
                         }
-                        if (gamer.method == 1) {
+                        if (gamer.method == 1 && mod.stat.vida > 0) {
                             if (gamer.evo > gamer.param) {
                                 public.giveChara(gamer.evol)
                                 lock = true
                                 public.mensaje(["Tu "+gamer.nombre+" a evolucionado a "+gamer.evol])
-                                public.actualizar(gamer.evol)
+                                evolucion(gamer.evol)
                             } else {
                                 if (!gamer.evo) {
                                     gamer.evo = 0
                                 }
                                 gamer.evo++
                             }
+                        }
+                        if (nivel.enemys && mod.stat.vida > 0) {
+                            if (!gamer.enemys) {
+                                gamer.enemys = 0
+                            }
+                            gamer.enemys++
+                            if (gamer.enemys >= nivel.enemys) {
+                                finalizacion()
+                            } 
+                        }
+                        if (gamer.exp.experiencia) {
+                            gamer.exp.experiencia += mod.stat.exp || 1
+                        } else {
+                            gamer.exp.experiencia = mod.stat.exp || 1
+                        }
+                        if (mod.stat.jefe) {
+                            if(gamer.exp[mod.jefe])
+                            gamer.exp[mod.jefe]++
+                            else
+                            gamer.exp[mod.jefe] = 1
                         }
                         mod.spr.firstChild.src = mod.sprs.perder
                         mod.spr.style.marginTop = "60px"
@@ -1724,6 +1874,7 @@ var callendo = false
             if (cartel[4].charAt(0) == "!") {
                 tag = "img"
             }
+            
             var val = cartel[4].substring(1)
             let nodo = creacion({tag:tag, style:{
                 width:cartel[0]+"px", 
@@ -1731,8 +1882,12 @@ var callendo = false
                 left: cartel[2]+"px", 
                 top:cartel[3]+"px",
             }, class: "cartel"})
+
             nodo.style.zIndex = cartel[8]
             if (tag == "div") {
+                if (cartel[4].charAt(0) == ".") {
+                    nodo.classList.add(val)
+                } else
                 nodo.style.backgroundColor = val
             } else {
                 nodo.src = val
@@ -1799,8 +1954,25 @@ var callendo = false
         move = false
         moveBoo = false
         especiale =1
+        if (nivel.fun > -1) {
+            accion[nivel.fun]()
+        }
         public.mods = mods
         //console.log(ubicacion)
+    }
+    function finalizacion() {
+        if (nivel.exit) {
+            nivel.exit()
+        }
+        if (nivel.item) {
+            public.giveItem((nivel.item[0] || nivel.item), (nivel.item[1] || 1))
+        }
+        public.levelLoad(nivel.salida)
+        if (gamer.saveX) {
+            gamer.x = gamer.saveX
+            gamer.y = gamer.saveY
+            accionTecla.KeyE_Down()
+        }
     }
     function buffRestore () {
         gamer.potens = []
@@ -1843,6 +2015,12 @@ var callendo = false
             }
         }
     }
+    function gamerVisible() {
+        if (gamer.buffs.visible < 1 || gamer.visible == false) {
+            return false
+        }
+        return true
+    }
     var movs = [
         function () {//0
             return [false]
@@ -1852,12 +2030,12 @@ var callendo = false
             if (!mod.movBoo) {
                 if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
                     mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                    if(gamer.buffs.visible >= 1)
+                    if(gamerVisible())
                     r = [false, true]
                 }
                 if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
                     mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                    if(gamer.buffs.visible >= 1)
+                    if(gamerVisible())
                     r = [true, false]
                 }
                 
@@ -1871,13 +2049,20 @@ var callendo = false
                 
             } 
             if (!mod.movBoo) {
-                if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
+                var movimiento = (mod.stat.vel*mod.buffs.vel)*10
+                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
                     if (gamer.x - mod.x < 0) {
                         mod.x -= (mod.stat.vel*mod.buffs.vel)*10
                     } else  {
                         mod.x += (mod.stat.vel*mod.buffs.vel)*10
                     }
-                    if(gamer.buffs.visible >= 1)
+                    if (gamer.y < mod.y ) {
+                        mod.y -= movimiento
+                    }
+                    if (gamer.y > mod.y) {
+                        mod.y += movimiento
+                    }
+                    if(gamerVisible() && r[1] == false)
                     r = [true, false]
                 }
             }
@@ -1885,13 +2070,15 @@ var callendo = false
         },
         function (mod) {//3
             var r = [false, false]
-            if (!mod.movBoo && gamer.buffs.visible >= 1) {
+            if (!mod.movBoo && gamerVisible()) {
+                
                 if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
                     if (gamer.x - mod.x < 0) {
                         mod.x -= (mod.stat.vel*mod.buffs.vel)*10
                     } else  {
                         mod.x += (mod.stat.vel*mod.buffs.vel)*10
                     }
+                   
                 }
                 if (mod.count[1] >= poderes[mod.poderes[1]].count && ((gamer.x - mod.x > 50) || (mod.x - gamer.x > 50)) ) {
                     r = [false, true]
@@ -1904,61 +2091,30 @@ var callendo = false
             return r 
         },
         function (mod) {//4
-            var r = [false, false, false, false]
-            if (!mod.cargaHab) {
-                mod.count[3] = 100
-                mod.cargaHab = true
-            }
-            var movimiento = (mod.stat.vel*mod.buffs.vel)*10
-            if (!mod.movBoo && gamer.buffs.visible == 1) {
+           let r = [false, false]
+           if (!mod.movBoo) {
+                r[0] = true
+                let movimiento = (mod.stat.vel*mod.buffs.vel)*10
+                if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
+                    mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                    
+                }
+                if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
+                    mod.x += (mod.stat.vel*mod.buffs.vel)*10
+                  
+                }
                 if (gamer.y < mod.y ) {
                     mod.y -= movimiento
                 }
                 if (gamer.y > mod.y) {
                     mod.y += movimiento
                 }
-                if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
-                    if (!mod.disparo) {
-                        mod.count[3] = 100
-                        r[3] = true
-                        mod.disparo = true
-                        var t = setTimeout(() => {
-                            mod.disparo = false
-                            window.clearTimeout(t)
-                        }, 5000);
-                    } else {
-
-                        if (mod.count[3] >= poderes[mod.poderes[3]].count) {
-                            r[3] = true
-                        }
-                        if (gamer.x - mod.x < 30 && gamer.x - mod.x > 0) {
-                            mod.x -= movimiento
-                            r[0] = true
-                            mod.cargaHab = false
-                        } else if (gamer.x - mod.x > -30 && gamer.x - mod.x < 0) {
-                            mod.x += movimiento
-                            r[0] = true 
-                            mod.cargaHab = false
-                        } else{
-                            if (gamer.x - mod.x < 0) {
-                                mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-        
-                            } else  {
-                                mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                            }
-                        }
-                        if(gamer.buffs.visible >= 1) {
-                            r[0] = true
-                            if(r[3] == false)
-                            r[1] = true
-                        }
-                    }
-                    }
-                
-            } else if (gamer.buffs.visible < 1) {
-                r = movs[2](mod)
+                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
+                    r = [false, true]
+                }
             }
-            return r 
+            
+            return r
         },
         function (mod) {
            
@@ -1980,12 +2136,20 @@ var callendo = false
             }
             return r
         }
+        if (tipo < 0) {
+            if (entidades[especie][0].tipo) {
+                tipo = entidades[especie][0].tipo
+            } else {
+                tipo = 0
+            }
+        }
         var entidad = {
             tipo: tipo,
             especie: especie,
             tipos: especies[especie][1],
             stat: especies[especie][0],
             stund: false,
+            canal: {},
             buffs: {
                 vel: 1,
                 atq: 1,
@@ -2001,6 +2165,20 @@ var callendo = false
                 res: 1,
                 raf: 1,
                 poderes: [-1, -1]
+            },
+            pasiva: {
+                vel: 1,
+                atq: 1,
+                shield: 1,
+                vat: 1,
+                salto: 1,
+                caida: 1,
+                def: 1,
+                crit: 1,
+                regen: 1,
+                res: 1,
+                raf: 1,
+                efectos: []
             },
             potens: [],
             timer: 0,
@@ -2019,6 +2197,7 @@ var callendo = false
             pasos: pasos,
             maldad: maldad,
             poderes: poderes,
+            nivel: 1,
             spr: persona("", galeria[entidades[especie][2]].normal, entidades[especie][0].h, entidades[especie][0].w),
             sprs: galeria[entidades[especie][2]]
         }
@@ -2047,12 +2226,27 @@ var callendo = false
                 entidad.carga = [0, 0, 0]
             }
         }
+        if (nivel.nivel) {
+            entidad.nivel = aleatorio(nivel.nivel[0], nivel.nivel[1])
+        }
+        if (emblemas[especie]) {
+            let key = Object.keys(emblemas[especie].stats)
+            for (let e = 0; e < key.length; e++) {
+                let stat = key[e];
+                let st = stat
+                if (stat == "shield") {
+                    st = "salud"
+                }
+                entidad.stat[st] += emblemas[especie].stats[stat] * entidad.nivel
+            }
+            
+        }
         mods.push(entidad)
         return entidad
         function nuevaEspecie(prop={}, prop2={}) {
             var retorno = {
                 vida: 10,
-                salud: 1,
+                salud: 10,
                 vel: 1,
                 atq: 1,
                 def: 1,
@@ -2076,8 +2270,8 @@ var callendo = false
                 resis: [2],
                 inmune: [],
             }
-            retorno = Object.assign({}, retorno, prop);
-            retorno2 = Object.assign({}, retorno2, prop2);
+            retorno = Object.assign(retorno, prop);
+            retorno2 = Object.assign(retorno2, prop2);
             if (retorno.obj > 0) {
                 if (aleatorio(0, 10) > retorno.objProb) {
                     retorno.obj = 0
@@ -2190,7 +2384,7 @@ var callendo = false
     function accion() {
         var direc = -50
         let spr = jugador
-         if ((spr.firstChild.style.transform != "" && !gamer.stat.iv) || (spr.firstChild.style.transform == "" && gamer.stat.iv)) {
+         if (spr.firstChild.style.transform == "") {
             direc = 50
         }
         var xMove = (gamer.x-direc)
@@ -2269,15 +2463,18 @@ var callendo = false
                         }
                     }
                 }
+                let basicEnemy = false
                 if(count == -1)
                 count = poder.count || 5
                 if (atacker.count[val] < count) {
                     if(!enemy)
                     return
-                    else
-                    poder = atacker.basico || Basico
+                    else{
+                        poder = atacker.basico || Basico
+                        basicEnemy = true
+                    }
                 }
-                if(!atacker.mana && !atacker.duplex)
+                if(!atacker.mana && !atacker.duplex && !basicEnemy)
                 atacker.count[val] = 0
             } else if(val > -1) {
                 poder = atacker.basico || Basico
@@ -2293,13 +2490,13 @@ var callendo = false
         if (mana < 0) {
             mana *= -1
         }
-        if (atacker.mana && (val < 2 || poder.mana)) {
+        if (atacker.mana && (poder.nombre || poder.mana)) {
 
             if (mana > atacker.mana) {
                 poder = poderes[0]
             } else{
                 atacker.mana -= mana
-                if(val < 2 && !atacker.duplex)
+                if(poder.nombre)
                 atacker.count[val] = 0
             }
         } else if (poder.mana) {
@@ -2313,6 +2510,7 @@ var callendo = false
         if (poder.damage <= 0) {
             trans = true
         }
+        let anim = ""
         let xmove = poder.x || 1
         let ymove = poder.y || 0
         if (rapido > 0) {
@@ -2323,7 +2521,7 @@ var callendo = false
             }
         }
         let critico = (()=> {
-            let r = aleatorio(atacker.buffs.crit, 11)
+            let r = aleatorio((atacker.buffs.crit*(atacker.pasiva.crit || 1)), 11)
             if (r > 8) {
                 return 3
             }
@@ -2331,6 +2529,7 @@ var callendo = false
         })()
         var spr = jugador
         var direc = 1
+        let side = 50
         var stundSelf = poder.stundSelf
         if (stundSelf) {
             atacker.stund = true
@@ -2339,11 +2538,12 @@ var callendo = false
             spr = atacker.spr
             
         }
-        if ((spr.firstChild.style.transform != "" && !atacker.stat.iv) || (spr.firstChild.style.transform == "" && atacker.stat.iv)) {
+        if (spr.firstChild.style.transform == "") {
             direc = -1
+            side = 0
         }
         //let xsave = atacker.x
-        let xMove = atacker.x+(xm*direc)
+        let xMove = (atacker.x+side)+(xm*direc)
         if (poder.inicio) {
             ataque(atacker, enemy, poder.inicio, false, xmove, ymove)
         }
@@ -2362,10 +2562,10 @@ var callendo = false
         let combo = {}
         let hb = hab
         let ob = obj
-        let antiShield = 0
-        let dam = atacker.stat.atq*atacker.buffs.atq
+        let antiShield = poder.really || 0
+        let dam = atacker.stat.atq*atacker.buffs.atq*(atacker.pasiva.atq || 1)
         if (poder.raf) {
-            dam = atacker.stat.raf*(atacker.buffs.raf || 1)
+            dam = atacker.stat.raf*(atacker.buffs.raf || 1)*(atacker.pasiva.raf || 1)
         }
         if (enemy) {
             hb = objetos[atacker.stat.hab]
@@ -2393,6 +2593,21 @@ var callendo = false
             if (h) {
                 damage = h
             }
+            if (!enemy) {
+                for (let i = 0; i < atacker.pasiva.efectos.length; i++) {
+                    let efecto = atacker.pasiva.efectos[i];
+                    if (efecto[0] == 2) {
+                        change(Object.assign({stap:0, damage:0, combo:{}, distancia:0, trans:trans, antiShield: 0}, efecto[1]))
+                    }
+                    if (efecto[0].tipo == 4) {
+                        efecto[1](atacker, val+4)
+                    }
+                    if (efecto[1].fun) {
+                       let h2 = efecto[1].fun(atacker, null, poder, carga) || 1
+                       damage *= h2
+                    }
+                }
+            }
         }
         if (ob.tipo == 2) {
             change(Object.assign({stap:0, damage:0, combo:{}, distancia:0, trans:trans, antiShield: 0}, ob.caract))
@@ -2412,7 +2627,8 @@ var callendo = false
                 atacker.buffs.crit,
                 (stap*10),
                 damage,
-
+                (atacker.salud || atacker.stat.salud)*0.1,
+                (atacker.mana || 1)*0.1
             ]
             var ass = [ 
                 0, 
@@ -2424,7 +2640,9 @@ var callendo = false
                 atacker.stat.res, //6
                 atacker.stat.crit, //7
                 (stap*10), //8
-                damage //9
+                damage, //9
+                (atacker.vida || atacker.stat.vida)*0.1, // 10
+                (atacker.canal.mana || 1)*0.1 // 11    
             ]
             if(obj.stap > 0){
                 let uper = obj.stapPlus || 0 
@@ -2432,11 +2650,16 @@ var callendo = false
             }
             if(obj.damage > 0){
                 let uper = obj.damagePlus || 1 
+                if(obj.damage < 8)
                 damage *= ((ass[obj.damage]*uper)-(ass[obj.damage]*val[obj.damage]))+1
+                else
+                damage += (ass[obj.damage] - val[obj.damage])*uper
             }
             if(obj.antiShield > 0){
                 let uper = obj.shieldPlus || 0 
-                antiShield += val[obj.antiShield]+uper
+                antiShield += val[obj.antiShield]
+                if (val[obj.antiShield] > 1)
+                antiShield+=uper
             }
             if (obj.avance > 0) {
                 let uper = obj.avanceUper || 0 
@@ -2456,10 +2679,20 @@ var callendo = false
             if (obj.count) {
                 atacker.count[obj.count[0]] += obj.count[1]
             }
-            if(obj.combo.length > 0)
-            combo = Object.assign(combo, obj.combo)
+            if(obj.combo){
+                if(poder.nombre)
+                combo = Object.assign(combo, obj.combo)
+            }
             if (obj.combi) {
+                if(poder.nombre)
                 combi =  Object.assign(combi, obj.combi)
+            }
+            if (obj) {
+                
+            }
+            if (obj.anim) {
+                if(poder.nombre)
+                anim = obj.anim
             }
             distancia += (obj.distancia*direc)
             trans = obj.trans
@@ -2536,10 +2769,12 @@ var callendo = false
             }
         }
         let nodo
-        if (poder.anim) {
+        if (anim != "" || poder.anim) {
+            if(poder.anim)
+            anim += poder.anim
             nodo = document.createElement("div")
             nodo.classList.add("div")
-            nodo.innerHTML = poder.anim
+            nodo.innerHTML = anim
             nodo.style.left = xMove +"px"
             nodo.style.top = yMove + "px"
             pantalla.append(nodo)
@@ -2628,12 +2863,12 @@ var callendo = false
                 
             }
             if (i < distancia) {
+                let z = 60*(direc*-1)
                 if (poder.tele && !(poder.rapido && rapido ==0)) {
                     if (!enemy) {
                         dash = true
                         move = true
                     }
-                    let z = 60*(direc*-1)
                     let m = avance
                     
                     if (poder.tele == 2) {
@@ -2685,9 +2920,7 @@ var callendo = false
                             x = 0-(m)
                             z *= -1
                         }
-                        atacker.buffs.inmune = 0
                     }
-                    let spr = atacker.spr
                     if (!enemy) {
                         spr = jugador
                         velDat = m
@@ -2697,22 +2930,25 @@ var callendo = false
                         
                     }
                     if (i >= distancia-1) {
-                        atacker.buffs.inmune = 1
                         atacker.stund = false
                     }
-                    if (poder.tele != 3 && poder.tele != 2) {
-                        if (i == 1) {
-                            spr.animate([
+                }
+                if (poder.tail) {
+                    if (i == 1) {
+                        let def = poder.tail
+                        if (poder.tail == "def" ) {
+                            def = [
                                 {boxShadow: "0px 0px 0px 0px "+atacker.stat.color},
                                 {boxShadow: (z*2)+"px 0px 100px 10px  "+atacker.stat.color},
-        
-                            ], {
-                                duration: 100*distancia,
-                                iterations: 1,
-                                fill: "backwards"
-                            })
+                            ]
                             
                         }
+                        spr.animate(def, {
+                            duration: 100*distancia,
+                            iterations: 1,
+                            fill: "backwards"
+                        })
+                        
                     }
                 }
                 if (nodo) {
@@ -2808,16 +3044,28 @@ var callendo = false
                         atacker.ataques++
                         
                         var leave = leaves(gamer.tipos, gamer.buffs.inmune)
-                        var def = gamer.stat.def*gamer.buffs.def
+                        var def = gamer.stat.def*gamer.buffs.def *gamer.pasiva.def
                         if (poder.res) {
-                            def = gamer.stat.res*gamer.buffs.res
+                            def = gamer.stat.res*gamer.buffs.res*gamer.pasiva.res
                         }
-                        var shield = 5 + (gamer.salud * (gamer.buffs.shield-1))
+                        var shield = 5 + (gamer.salud * ((gamer.buffs.shield*gamer.buffs.shield)-1))
                         if (hab.tipo == 6) {
                             cange(Object.assign({leave:1, def:0, shield:0}, hab.caract), gamer)
                         }
                         if (hb.caract.fun) {
                             hb.caract.fun(atacker, gamer, poder)
+                        }
+                        if (hab.caract.cion) {
+                            hab.caract.cion(atacker, gamer, poder)
+                        }
+                        for (let i = 0; i < gamer.pasiva.efectos.length; i++) {
+                            let efecto = gamer.pasiva.efectos[i];
+                            if (efecto[0] == 6) {
+                                cange(Object.assign({leave:1, def:0, shield:0}, efecto[0].caract), gamer)
+                            }
+                            if (efecto[1].cion) {
+                                efecto[1].cion(atacker, gamer, poder, carga)
+                            }
                         }
                         if (obj.tipo == 6) {
                             cange(Object.assign({leave:1, def:0, shield:0}, obj.caract), gamer)
@@ -2830,13 +3078,8 @@ var callendo = false
                         damage *= leave
                         antiShield *= leave
                         
-                        if (gamer.cria) {
-                            criaturas[gamer.i].salud -= damage
-                            criaturas[gamer.i].salud -= antiShield
-                        } else {
-                            gamer.salud -= damage
-                            gamer.salud -= antiShield
-                        }
+                        gamer.salud -= damage
+                        gamer.salud -= antiShield
                         if(robo > 0)
                         atacker.stat.salud += damage* (robo/100)
                         if (critico > 1 && leave > 0) {
@@ -2886,7 +3129,7 @@ var callendo = false
                     for (let j = 0; j < mods.length; j++) {
                         const mod = mods[j];
                         if ((mod.x-tamX <= xMove && mod.x+tamX >= xMove) && (mod.y+tamY >= yMove && mod.y-tamY <= yMove) && !mod.cartel) {
-                            if(mod.stat.salud > 0) {
+                            if(mod.stat.salud > 0 && (mod.maldad || mod.especie == "bagstone") && !nivel.ciudad) {
                                 if (gamer.ultiComb) {
                                     gamer.combCount++
                                 }
@@ -2907,11 +3150,20 @@ var callendo = false
                                 if (ob.tipo == 6) {
                                     cange(Object.assign({leave:1, def:0, shield:0}, ob.caract), mod)
                                 }
+                                if (hb.caract.cion) {
+                                    hb.caract.cion(gamer, mod, poder)
+                                }
                                 if (hab.caract.fun) {
                                     hab.caract.fun(gamer, mod, poder)
                                 }
                                 if (hb.tipo == 4) {
                                     hb.caract(mod, 2)
+                                }
+                                for (let i = 0; i < atacker.pasiva.efectos.length; i++) {
+                                    let efecto = atacker.pasiva.efectos[i];
+                                    if (efecto[1].fun) {
+                                        efecto[1].fun(atacker, mod, poder, carga)
+                                    }
                                 }
                                 damage /= def 
                                 damage *= leave
@@ -3004,7 +3256,7 @@ var callendo = false
                 }
                 function nerf(defender = gamer) {
                     if (poder.cion) {
-                        poder.cion(atacker, defender)
+                        poder.cion(atacker, defender, poder)
                     }
                     
                     if (poder.stund) {
@@ -3189,7 +3441,7 @@ var callendo = false
             atacker.atack = 0
             var leave = 1
             if (mod.debil.includes(poder.tipo)) {
-                leave = 1.2
+                leave = 1.3
             }
             if (mod.resis.includes(poder.tipo)) {
                 leave = 0.8
@@ -3252,10 +3504,10 @@ var pasos = 0
     var set = setInterval(() => {
         if (lock == false && gamer) {
             if (veltime < vatime) {
-                veltime += (gamer.stat.salto * gamer.buffs.vat)
+                veltime += (gamer.stat.salto * gamer.buffs.vat * gamer.pasiva.vat)
             }
             if (gamer.salud < gamer.vida)
-            restore += 0.1 / (gamer.stat.caida / gamer.buffs.caida)
+            restore += 0.1 / (gamer.stat.caida / gamer.buffs.caida / gamer.pasiva.caida)
             let c1 = poderes[gamer.poderes[0]].count || 5
             let c2 = poderes[gamer.poderes[1]].count || 5
             let c3 = poderes[gamer.poderes[2]]
@@ -3263,7 +3515,7 @@ var pasos = 0
                 if (gamer.count[0] == 0) {
                     cargaDem()
                 }
-                gamer.count[0] += 0.1*gamer.buffs.salto
+                gamer.count[0] += 0.1*gamer.buffs.salto*gamer.pasiva.salto
             } else {
                 atack.style.boxShadow = "0px -5px 10px 0px blue"
             }
@@ -3271,7 +3523,7 @@ var pasos = 0
                 if (gamer.count[1] == 0) {
                     cargaDom()
                 }
-                gamer.count[1] += 0.1*gamer.buffs.salto
+                gamer.count[1] += 0.1*gamer.buffs.salto*gamer.pasiva.salto
             }  else {
                 especial.style.boxShadow = "0px -5px 10px 0px blue"
             }
@@ -3281,7 +3533,7 @@ var pasos = 0
                     if (gamer.count[2] == 0) {
                         cargaDom(third, 2)
                     }
-                    gamer.count[2] += 0.1*gamer.buffs.salto
+                    gamer.count[2] += 0.1*gamer.buffs.salto*gamer.pasiva.salto
                 } else {
                     third.style.boxShadow = "0px -5px 10px 0px blue"
                 }
@@ -3291,7 +3543,7 @@ var pasos = 0
                     if (gamer.combCount == 0) {
                         cargaDim()
                     }
-                    gamer.combCount += 0.1*gamer.buffs.salto
+                    gamer.combCount += 0.1*gamer.buffs.salto*gamer.pasiva.salto
                 } else {
                     ulti.style.boxShadow = "0px -5px 10px 0px blue"
                     ultiActivate = true
@@ -3405,11 +3657,11 @@ var pasos = 0
             
         }
         if (restore >= gamer.restore && gamer.salud < gamer.vida) {
-            gamer.salud += (gamer.buffs.regen*gamer.regen)*0.5
+            gamer.salud += (gamer.buffs.regen*gamer.regen*gamer.pasiva.regen)*0.5
             verificar()
         }
         if ((gamer.mana < gamer.canal.mana) && !gamer.tanques ) {
-            gamer.mana += (gamer.canal.charge || 1) * (1/(gamer.stat.caida*gamer.buffs.caida))*0.1
+            gamer.mana += (gamer.canal.charge || 1) * (1/(gamer.stat.caida*gamer.buffs.caida*gamer.pasiva.caida))*0.1
             verificar()
 
         }
@@ -3536,6 +3788,7 @@ var pasos = 0
         gamer.x += x
         gamer.y += y
     }
+   
     public.changeChara = accionTecla.KeyQ_Down
     public.cambioPersonaje = cambioPersonaje
     
@@ -3544,6 +3797,56 @@ var pasos = 0
     public.gamer = gamer
     public.jugador = jugador
     public.obj1 = obj1
+    public.pasiva = pasivas
+    public.cargarPasiva = cargarPasiva
+    public.levelLoad = (n)=> {
+        gamer.enemys = 0
+        if (typeof(n) == "number") {
+            levelLoad(n)
+        } else if(typeof(n) == "object") {
+            gamer.saveX = gamer.x
+            gamer.saveY = gamer.y
+            let o = {
+                color: "white",
+                piso: "#70c8a0",
+                tipo: 0,
+                largo: 1000,
+                x: 100,
+                y: 500,
+                fun: -1,
+                salvaje: false,
+                ciudad: false,
+                nivel: [1, 2],
+                pisos: [
+                    [1000, 600, 200, 0]
+                ],
+                carteles: [],
+                npcs: []
+            }
+            o = Object.assign(o, n)
+            for (let i = 0; i < o.pisos.length; i++) {
+                const piso = o.pisos[i];
+                if (piso == "piso") {
+                    o.pisos[i] = [o.largo, 600, 200, 0]
+                }
+                if (piso[0] == "devolver") {
+                    o.pisos[i] = [piso[1], piso[2], piso[3], piso[4], piso[5], piso[6], nivel, piso[7], piso[8]]
+                }
+            }
+            levelLoad(o)
+        }
+    }
+    public.nivel = ()=> {
+        return nivel
+    }
+    public.guardarPasiva = (pas, nombre)=> {
+        if (pas && nombre) {
+            pasivas[nombre] = pas
+        }
+        localStorage.setItem("crias", JSON.stringify(pasivas))
+        localStorage.setItem("poke", JSON.stringify(gamer))
+    }
+
     return public
     
 })()
