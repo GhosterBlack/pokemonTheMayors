@@ -286,7 +286,7 @@ var acciones = [
             fila.appendChild(td)
             celdas++
             nodo.onclick =()=> {
-                if (app.gamer.personajes.includes(nombre) == false && false) {
+                if (app.gamer.personajes.includes(nombre) == false) {
                     return
                 }
                 tabla.style.display = "none"
