@@ -2,12 +2,14 @@ const semiblack = "rgba(40, 40, 40, 0.3)"
 
 var niveles = [
     {
+        ciudad: true,
         tipo: 0,
         color: "white",
         piso: "red",
         largo: 1000,
         x: 500,
         y: 550,
+        music: "littleroot",
         pisos: [
             [1000, 400, 400, 0],
             [100, 100, 700, 500, semiblack, "puerta", 3, 500, 500]
@@ -34,26 +36,36 @@ var niveles = [
         piso: "rgb(180, 255, 200)",
         largo: 6000,
         salvaje: true,
-        salvajes: ["shuppet", "rattata", "rattata", "shuppet", "rattata"],
-        prob: 10,
+        letrero: "Ruta Umbral",
+        music: "ftdcPiano",
+        salvajes: ["petilil", "rattata", "rattata", "petilil", "rattata"],
+        prob: 2,
+        x: 300,
+        puzzle: true,
         pisos: [
             [6000, 600, 200, 0],
             [500, 100, 200, 400, "green", "accion", 10],
             [500, 100, 650, 400, "green", "accion", 10],
             [500, 100, 650, 1400, "green", "accion", 10],
-            [200, 100, 500, 0, semiblack, "puerta", 3, 1900, 500]
-
+            [200, 100, 500, 0, semiblack, "puerta", 3, 1900, 500],
+            [500, 200, 200, 2000, "green", "accion", 10],
+            [100, 400, 400, 2400, "green", "accion", 10],
+            [500, 250, 350, 2700, "green", "accion", 10],
+            [500, 100, 450, 3900, "green", "accion", 10],
 
         ],
-        npcs: [],
+        npcs: [
+            [5, "chica", 1500, 400, 30, false, 16, 3, 1],
+            [5, "chica", 3000, 300, 30, false, 16, 4, 2],
+            [5, "chica", 3500, 500, 30, false, 16, 5, 3],
+            [5, "chica", 4500, 600, 30, false, 16, 6, 4],
+            [5, "chica", 4200, 300, 30, false, 16, 7, 5],
+            [5, "chica", 5000, 200, 30, false, 16, 8, 6],
+            
+        ],
         carteles: [
             //[Ancho, alto, posX, posY, #paraColor/!paraSrc, pasable?, accion, accionable?, profundidad, puerta]
-            [500, 100, 2000, 400, "#gray", true, 0, false, 0],
-            [500, 100, 2000, 700, "#gray", true, 0, false, 0],
-            [100, 300, 2700, 500, "#gray", true, 0, false, 0],
-            
-
-
+            [100, 500, 2500, 300, "#brown", true, 0, false, 0, 0],
         ]
     },
     {//2
@@ -85,6 +97,8 @@ var niveles = [
         x: 100,
         y: 500,
         ciudad: true,
+        music: "littlerootRemix",
+        letrero: "Pueblo Silvis",
         pisos: [
             [2100, 600, 200, 0],
             [50, 100, 400, 200, "transparent", "casa", "none"],
@@ -94,13 +108,17 @@ var niveles = [
             [100, 100, 500, 2000, semiblack, "wrap", 1]
 
         ],
-        npcs: [],
+        npcs: [
+            [1, "chica", 500, 600, 30, false, 16]
+
+        ],
         carteles: [
             [1900, 100, 50, 500, "#rgb(200, 200, 190)", false, 0, false, 0],
             [300, 150, 70, 200, "#transparent", true, 1, true, 0],
             [300, 150, 470, 200, "#transparent", true, 1, true, 0],
             [300, 150, 870, 200, "#transparent", true, 2, true, 0],
             [400, 150, 1170, 200, "#transparent", true, 3, true, 0],
+            [40, 100, 70, 600, ".cartelPueblo", true, 15, true, 1]
 
         ]
     },
@@ -117,11 +135,12 @@ var niveles = [
             [100, 100, 700, 500, semiblack, "puerta", 3, 1000, 500]
         ],
         npcs: [
-            [0, "tendero", 900, 500, 0, false, 11]
+            [0, "tendero", 800, 500, 0, false, 11, 3]
         ],
         carteles: [
-            [150, 400, 0, 200, "#gray", true, 12, true, 0],
-            [150, 400, 300, 200, "#gray", true, 12, true, 0],
+            [150, 400, 0, 200, "#gray", true, 12, true, 0, 10],
+            [150, 400, 300, 200, "#gray", true, 12, true, 0, 18],
+
 
         ]
     },
@@ -151,6 +170,7 @@ var niveles = [
         ]
     }
 ]
+
 var lock = false
 var wraps = [
     "wrap",
@@ -266,7 +286,7 @@ var acciones = [
             fila.appendChild(td)
             celdas++
             nodo.onclick =()=> {
-                if (app.gamer.personajes.includes(nombre) == false) {
+                if (app.gamer.personajes.includes(nombre) == false && false) {
                     return
                 }
                 tabla.style.display = "none"
@@ -761,29 +781,34 @@ var acciones = [
                 modificar.innerHTML = "Modificar";
                 let booM = false
                 let ts = text.innerHTML 
+                let pasivas = app.pasiva[nombre] || [{
+                    nombre: nombre,
+                    codigo: aleatorio(0, 100000),
+                    nivel: 1,
+                    select: true,
+                    activa: 0,
+                    pasivas: [],
+                    exp: 0,
+                    cambio: [],
+                    obj: 0
+                }]
+                let config = emblemas[nombre]
+                let index = 0;
+                let select = (()=> {
+                    for (let i = 0; i < pasivas.length; i++) {
+                        const pas = pasivas[i];
+                        if (pas.select) {
+                            index = i
+                            return pas
+                        }
+                    }
+                })()
                 modificar.onclick = ()=> {
                     if (!booM) {
                         booM = true
-                        let pasivas = app.pasiva[nombre] || [{
-                            nombre: nombre,
-                            codigo: aleatorio(0, 100000),
-                            nivel: 1,
-                            select: true,
-                            activa: 0,
-                            pasivas: [],
-                            exp: 0
-                        }]
-                        let config = emblemas[nombre]
-                        let index = 0;
-                        let select = (()=> {
-                            for (let i = 0; i < pasivas.length; i++) {
-                                const pas = pasivas[i];
-                                if (pas.select) {
-                                    index = i
-                                    return pas
-                                }
-                            }
-                        })()
+                        if (!select.cambio) {
+                            select.cambio = []
+                        }
                         let cantidadHuevo = document.createElement("div")
                         let array = [];
                         var arreglo = {}
@@ -795,7 +820,7 @@ var acciones = [
                         function cargarActiva() {
                             text.innerHTML = ""
                             modDiv();
-                            load = false
+                            load = true
                             text.append(cantidadHuevo)
                             array = []
                             let cargaNivel = document.createElement("div")
@@ -813,10 +838,16 @@ var acciones = [
                                 let nodo = document.createElement("option")
                                 nodo.value = p
                                 nodo.innerHTML = pas.nombre
-                                nodo.onselect = ()=> {
-                                    cargarPasiva(pas)
-                                }
                                 selectNode.append(nodo)
+                                if (pas.select) {
+                                    selectNode.selectedIndex = p
+                                }
+                            }
+                            selectNode.onchange = ()=> {
+                                select.select = false
+                                cargarPasiva(pasivas[selectNode.options[selectNode.selectedIndex].value])
+                                cargarActiva()
+                                pasivas[selectNode.options[selectNode.selectedIndex].value].select = true
                             }
                             text.appendChild(selectNode)
                             cargaNivel.onclick = ()=> {
@@ -849,7 +880,7 @@ var acciones = [
                                 nodo.classList.add("poderVer")
                                 nodo.innerText = mov.nombre
                                 nodo.onclick = ()=> {
-                                    text.innerHTML = mov.d+"<br><br> Se requiere una "+objetos[mov.baya].nombre+" para disminuir puntos de aumento<br><br>"
+                                    text.innerHTML = mov.uso+"/<br><br>"+mov.d+"<br><br> Se requiere una "+objetos[mov.baya].nombre+" para disminuir puntos de aumento<br><br>"
                                     let boton = document.createElement("input")
                                     boton.value = "<<<"
                                     boton.type = "button";
@@ -868,8 +899,10 @@ var acciones = [
                                                 app.gamer.exp[config.huevo] = 1
                                                 cargarPasiva()
 
+                                            } else {
+                                                alert("no tienes bayas")
                                             }
-                                        }
+                                        } 
                                     }
                                     text.appendChild(boton1)
                                     boton2.value = "+"
@@ -880,8 +913,18 @@ var acciones = [
                                                 if(arreglo[em] <= config.movs[em].max)
                                                 arreglo[em]++
                                             }
-                                            else if (select.pasivas.length < 8)
-                                            arreglo[em] = 1
+                                            else if (select.pasivas.length < 8){
+                                                arreglo[em] = 1
+                                                if (mov.obj) {
+                                                    if (!app.gamer.objetos.includes(mov.obj)) {
+                                                        alert("Hace falta un "+objetos[mov.obj].nombre+" Para enseñar este movimiento")
+                                                        return
+                                                    } else {
+                                                        app.gamer.objetos[app.gamer.objetos.indexOf(mov.obj)] = 0
+                                                    }
+                                                }
+                                            }
+                                            if (select.pasivas.length < 8)
                                             app.gamer.exp[config.huevo]--
                                             cargarPasiva()
                                         }
@@ -903,6 +946,42 @@ var acciones = [
                                         }
                                         text.appendChild(boton)
                                     }
+                                    if (mov.cambio) {
+                                        let boton = document.createElement("input")
+                                        boton.value = "Seleccionar configuracion"
+                                        boton.type = "button";
+                                        if (select.cambio.includes("!"+mov.nombre)) {
+                                            boton.style.backgroundColor = "blue"
+                                        }
+                                        boton.onclick = ()=> {
+                                            if (select.cambio.includes("!"+mov.nombre)) {
+                                                let x = select.cambio.indexOf("!"+mov.nombre)
+                                                select.cambio.splice(x, mov.cambio.length)
+                                                boton.style.backgroundColor = ""
+
+
+                                            } else {
+                                                if (mov.item) {
+                                                    let item = mov.item
+                                                    select.cambio.push("!"+mov.nombre)
+                                                    if (app.gamer.objetos.includes(item) || item == -1) {
+                                                        for (let x = 0; x < mov.cambio.length; x++) {
+                                                            const cambio = mov.cambio[x];
+                                                            select.cambio.push(cambio)
+                                                        }
+                                                        if(item > 0)
+                                                        app.gamer.objetos[app.gamer.objetos.indexOf(item)] = 0
+                                                        boton.style.backgroundColor = "blue"
+                                                    }
+                                                } 
+    
+                                            }
+                                        }
+                                        text.appendChild(document.createElement("br"))
+
+                                        text.appendChild(boton)
+
+                                    }
                                     text.append(array[em].parentNode)
                                 }
                                 let cargaBarra = document.createElement("div")
@@ -918,6 +997,9 @@ var acciones = [
                             let guardado = document.createElement("input")
                             guardado.type = "button"
                             guardado.value = "Liberar"
+                            if (config.huevo == "humano") {
+                                guardado.style.display = "none"
+                            }
                             guardado.onclick = ()=> {
                                 if (pasivas.length > 1) {
                                     pasivas.splice(index, 1)
@@ -989,13 +1071,16 @@ var acciones = [
                     }
                 }
                 agregar.onclick = ()=> {
-                    if (app.gamer.equipo.length < 3 && !app.gamer.equipo.includes(nombre) && app.gamer.nombre != nombre) {
+                    if (app.gamer.equipo.length < 4 && !app.gamer.equipo.includes(nombre) && app.gamer.nombre != nombre) {
                         app.gamer.equipo.push(nombre)
                         app.gamer.vidas.push(propiedades.vida)
+                        app.gamer.objeto.push(select.obj || 0)
                         inp.click()
                         lock = true
                     } else if (app.gamer.equipo.includes(nombre)) {
                         app.gamer.equipo.splice(app.gamer.equipo.indexOf(nombre), 1)
+                        app.gamer.vidas.splice(app.gamer.equipo.indexOf(nombre), 1)
+                        app.gamer.objeto.splice(app.gamer.equipo.indexOf(nombre), 1)
                         inp.click()
                         lock = true
                     }
@@ -1190,18 +1275,107 @@ var acciones = [
                     [-1, nivel.salvajes[aleatorio(0, nivel.salvajes.length-1)], 1400, 500, 100, true, 0],
                 ],
             }
-            console.log(pokes,)
             app.levelLoad(pokes)
         }
     },
-    function () {// 11
-        
+    function (param) {// 11
+        console.log(param)
+        if (param == 3) {
+            lock = true
+            app.mensaje(["¿Bueno entonces, que quieres hacer?"], true, ["Comprar", 11, 1, "Vender", 11, 2, "Nada", 0, 0])
+        }
+        if (param == 1) {
+            if (app.gamer.carrito.length > 0) {
+                let costoTotal = 0;
+                for (let i = 0; i < app.gamer.carrito.length; i++) {
+                    const obj = objetos[app.gamer.carrito[i]];
+                    if (obj.tipo > 0) {
+                        costoTotal += obj.valor || 10
+                    }
+                }
+                if (costoTotal > app.gamer.dinero) {
+                    afterMessage = ()=> {
+                        app.mensaje(["Todo esto cuesta: "+costoTotal+"$, no tienes suficiente dinero"])
+                        afterMessage = ()=> {}
+                    }
+                } else {
+                    for (let i = 0; i < app.gamer.carrito.length; i++) {
+                        const obj = app.gamer.carrito[i];
+                        if (obj > 0) {
+                            app.gamer.objetos.push(obj)
+                        }
+                    }
+                    app.gamer.dinero -= costoTotal
+                    afterMessage = ()=> {
+                        app.mensaje(["Ya esta hecho, que tenga un buen dia"])
+                        afterMessage = ()=> {}
+                    }
+
+                }
+                
+            }
+        } 
+        if (param == 2) {
+            afterMessage = ()=> {
+                app.mensaje(["Selecciona lo que quieres vender"], false)
+                afterMessage = ()=> {
+                    app.keyW((i)=> {
+                        let obj = objetos[app.gamer.objetos[i]]
+                        if (obj.tipo > 0) {
+                            app.gamer.dinero += obj.venta || 10
+                            app.gamer.objetos[i] = 0
+                            app.keyW()
+                        }
+                    })
+                    afterMessage = ()=> {}
+                }
+            }
+        }
     },
-    function () {// 12
-        // lock = true
-        // let nivel = app.nivel()
-        // let obj = nivel.objts[aleatorio(0, nivel.objts.length-1)]
-        // app.mensaje([])
+    function (param = 0) {// 12
+        lock = true
+        let obj = objetos[param]
+        app.mensaje(["Quieres agregar al carrito un "+obj.nombre, 
+        "costo: "+(obj.valor || 10)+"$ <br> Capital: "+app.gamer.dinero+"$"], 
+        true, ["si", 13, param, "no", 0, 0, "dejar todo", 14, param])
+    },
+    function (param) {// 13
+        if (app.gamer.carrito) {
+            app.gamer.carrito.push(param)
+        } else {
+            app.gamer.carrito = [param]
+        }
+        afterMessage = ()=> {
+            app.mensaje(["Has agregado un "+objetos[param].nombre+" al carrito."])
+            afterMessage = ()=> {}
+        }
+    },
+    function (param) {// 14
+        if (app.gamer.carrito) {
+            for (let i = 0; i < app.gamer.carrito.length; i++) {
+                const obj = app.gamer.carrito[i];
+                if (obj == param) {
+                    app.gamer.carrito[i] = 0
+                }
+            }
+        }
+    },
+    function (param=0) {//15
+        let letreros = [
+            "Bienvenido a Pueblo Silvis",
+            ""
+        ]
+        lock = true,
+        app.mensaje([letreros[param]])
+    },
+    function () {// 16
+        lock = true
+        if(flag(1)) {
+            app.mensaje(["Hola, @nick. ¿Como estas?"])
+            return
+        }
+        app.mensaje(["Hola, @nick. Hace un lindo dia ¿no? Creo que la profesora Dana te estaba buscando hoy",
+        "Que bonito tejado amarillo le pusieron al laboratorio ¿no?"])
     }
 ]
 function miniCreator(x, y) {
@@ -1216,28 +1390,317 @@ function miniCreator(x, y) {
     return info
 
 }
-function tienda(i) {
-    var caract = objetos[i]
-    var a = false
-    for (let h = 0; h < app.gamer.objetos.length; h++) {
-        const obj = app.gamer.objetos[h];
-        let element = objetos[obj]
-        if (element.tipo == 4) {
-            if (caract.costo <= element.valor || !caract.costo) {
-                var prom = prompt("Quieres usar "+element.nombre+" para comprar "+caract.nombre+" \n 1) si \n 2) no")
-                if (prom != "1") {
-                    continue
-                }
-                app.gamer.objetos[h] = i
-                a = true
-                app.mensaje(["Ten aqui tienes."])
-                h = app.gamer.objetos.length
-            } 
 
-        }
+function gamerVisible() {
+    if (app.gamer.buffs.visible < 1 || app.gamer.visible == false) {
+        return false
     }
-    console.log(a)
-    if (a == false) {
-        app.mensaje(["No tienes nada que intercambiar."])
-    }
+    return true
 }
+var movs = [
+    function () {//0
+        return [false]
+    },
+    function (mod) {//1
+        var r = [false, false]
+        if (!mod.movBoo) {
+            if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
+                mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                if(gamerVisible())
+                r = [false, true]
+            }
+            if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
+                mod.x += (mod.stat.vel*mod.buffs.vel)*10
+                if(gamerVisible())
+                r = [true, false]
+            }
+            
+        }
+        return r
+    },
+    function (mod) {//2
+        var r = [false, false]
+        let gamer = app.gamer
+
+        if (mod.count[1] >= poderes[mod.poderes[1]].count) {
+            r = [false, true]
+            
+        } 
+        if (!mod.movBoo) {
+            var movimiento = (mod.stat.vel*mod.buffs.vel)*10
+            if (gamerVisible()) {
+                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
+                    if (gamer.x - mod.x < 0) {
+                        mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                    } else  {
+                        mod.x += (mod.stat.vel*mod.buffs.vel)*10
+                    }
+                    if (gamer.y < mod.y ) {
+                        mod.y -= movimiento
+                    }
+                    if (gamer.y > mod.y) {
+                        mod.y += movimiento
+                    }
+                    if(r[1] == false)
+                    r = [true, false]
+                }
+                
+            } else {
+                r = movs[0](mod)
+            }
+        }
+        return r
+    },
+    function (mod) {//3
+        var r = [false, false]
+        if (!mod.movBoo && gamerVisible()) {
+            let gamer = app.gamer
+            
+            if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
+                if (gamer.x - mod.x < 0) {
+                    mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                } else  {
+                    mod.x += (mod.stat.vel*mod.buffs.vel)*10
+                }
+               
+            }
+            if (mod.count[1] >= poderes[mod.poderes[1]].count && ((gamer.x - mod.x > 50) || (mod.x - gamer.x > 50)) ) {
+                r = [false, true]
+            } else if ((gamer.x - mod.x > 200) || (mod.x - gamer.x > 200)) {
+                r = [true, false]
+            }
+        } else if(!mod.movBoo) {
+            r = movs[1](mod)
+        }
+        return r 
+    },
+    function (mod) {//4
+       let r = [false, false]
+       if (!mod.movBoo) {
+            r[0] = true
+            let gamer = app.gamer
+
+            let movimiento = (mod.stat.vel*mod.buffs.vel)*10
+            if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
+                mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                
+            }
+            if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
+                mod.x += (mod.stat.vel*mod.buffs.vel)*10
+              
+            }
+            if (gamer.y < mod.y ) {
+                mod.y -= movimiento
+            }
+            if (gamer.y > mod.y) {
+                mod.y += movimiento
+            }
+            if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
+                r = [false, true]
+            }
+        }
+        
+        return r
+    },
+    function (mod) { // 5
+        let gamer = app.gamer
+        if (!mod.movBoo) { 
+            movs[1](mod)
+            if (!flag(mod.param) && flag(1)) {
+                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10 && mod.y > gamer.y-50 && mod.y < gamer.y+50) {
+                    lock = true
+                    app.mensaje(["Ey. Tengamos una batalla"])
+                    afterMessage = ()=> {
+                        let batalla = batallas[mod.batalla]
+                        console.log(batalla, mod.batalla)
+                        batalla.salida = app.nivel()
+                        app.levelLoad(batalla)
+                        
+                        afterMessage = ()=> {}
+                    }   
+                }
+            }
+        }
+        return [false, false]
+    },
+    function (mod) { // 6
+        let r = [false, false]
+        if (!mod.movBoo && gamerVisible()) {
+            let gamer = app.gamer
+            let movimiento = (mod.stat.vel*mod.buffs.vel)*10
+            if (gamer.x+500 < mod.x+(mod.pasos)*10 && gamer.x+500 > mod.x-(mod.pasos)*10) {
+                if (gamer.x - mod.x < 0) {
+                    mod.x -= (mod.stat.vel*mod.buffs.vel)*10
+                } else  {
+                    mod.x += (mod.stat.vel*mod.buffs.vel)*10
+                }
+                if (gamer.y < mod.y ) {
+                    mod.y -= movimiento
+                }
+                if (gamer.y > mod.y) {
+                    mod.y += movimiento
+                }
+            }
+            if (((gamer.x - mod.x > 200) || (mod.x - gamer.x > 200)) ) {
+                if (mod.stat.salud < mod.stat.vida*0.5) {
+                    r = [true, false]
+                    
+                } else
+                r = [false, true]
+            } else {
+                if (gamer.x - mod.x < 0) {
+                    mod.x += (mod.stat.vel*mod.buffs.vel)*20
+                } else  {
+                    mod.x -= (mod.stat.vel*mod.buffs.vel)*20
+                }
+            }
+        } else if(!mod.movBoo) {
+            r = movs[1](mod)
+        }
+        return r 
+    }
+]
+let batallas = [
+    0,
+    { // 1
+        batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [4, 5],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(3, 1)
+        },
+        npcs: [
+            [2, "rattata", 1400, 500, 100, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ],
+       
+      
+    },
+    {//2
+         batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [4, 5],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(4, 1)
+        },
+        npcs: [
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ],
+    },
+    {// 3
+        batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [4, 5],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(5, 1)
+        },
+        npcs: [
+            [2, "rattata", 1300, 500, 100, true, 0],
+            [6, "petilil", 1500, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ]
+    },
+     {// 4
+        batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [5, 5],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(6, 1)
+        },
+        npcs: [
+            [2, "rattata", 1300, 500, 100, true, 0],
+            [6, "petilil", 1500, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ]
+    },
+     {// 5
+        batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [5, 6],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(7, 1)
+        },
+        npcs: [
+            [2, "rattata", 1300, 500, 100, true, 0],
+            [6, "petilil", 1500, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ]
+    },
+     {// 6
+        batalla: true,
+        salvaje: false,
+        enemys: 2,
+        salida: 0,
+        nivel: [6, 7],
+        piso: "violet",
+        color: "pink",
+        largo: 4000,
+        exit: ()=> {
+            flag(8, 1)
+        },
+        npcs: [
+            [2, "rattata", 1300, 500, 100, true, 0],
+            [6, "petilil", 1500, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+            [2, "rattata", 1200, 500, 100, true, 0],
+            [6, "petilil", 1400, 500, 400, true, 0],
+        ],
+        pisos: [
+            "piso"
+        ]
+    },
+]

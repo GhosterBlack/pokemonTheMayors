@@ -71,7 +71,7 @@
                 100px 50px 0px 0px,
                 100px 100px 0px 0px;
 }
-.fatuo {
+.fatuo, .toxico {
     width: 50px;
     border-radius: 100%;
     box-shadow: 20px 0px 15px 0px rgba(140, 0, 255, 0.705),
@@ -80,6 +80,87 @@
     position: absolute;
     background-color: rgba(236, 22, 255, 0.247);
 }
+.toxico {
+    background-color: transparent;
+}
+.onda {
+    width: 50px;
+    border-radius: 100%;
+    box-shadow: 20px 0px 15px 0px rgba(0, 204, 255, 0.705),
+                -20px 0px 15px 0px rgba(33, 222, 255, 0.596) ;
+    animation: rotar 0.3s normal infinite;
+    position: absolute;
+    background-color: rgba(181, 22, 255, 0.247);
+}
+.lengua {
+    margin-top: 60px;
+    
+    height: 30px;
+    background-color: pink;
+    border-radius: 0px 30px 30px 0px;
+}
+.petalo {
+    --b: rgb(129, 245, 119);
+    --c: rgb(247, 127, 247);
+    background-color: var(--b);
+    border: 5px solid var(--c);
+    border-radius: 100% 0% 100% 0%;
+    
+}
+.soneto {
+    --b: rgb(129, 245, 119);
+    --c: rgb(127, 247, 231);
+    background-color: var(--b);
+    border: 1px solid var(--c);
+    border-radius: 100% 0% 100% 0%;
+    width: 10px;
+    height: 20px;
+    transform: rotate(20deg);
+    
+}
+.corazon {
+    --w: 50px;
+    --h: 50px;
+    --e: -25px;
+    --s: -25px;
+    --c: violet;
+    width: var(--w);
+    height: var(--h);
+    transform: rotate(45deg);
+    background: var(--c);
+    position: relative;
+    filter: drop-shadow(0px 0px 10px violet);
+  
+  }
+  
+  .corazon:before,
+  .corazon:after {
+    content: "";
+    height: var(--h);
+    width: var(--w);
+    border-radius: 50%;
+    background: var(--c);
+    position: absolute;
+  }
+  
+  .corazon:before {
+    top: 0;
+    left: var(--e);
+  }
+  
+  .corazon:after {
+    top: var(--s);
+    left: 0px;
+  }
+
+  .campo {
+    --b: rgb(118, 250, 136);
+    --c: rgba(255, 96, 255, 0.288);
+    --f: transparent;
+    border-radius: 100%;
+    background: radial-gradient(var(--f), var(--c));
+    border: solid 5px var(--b);
+  }
 @keyframes rotar {
     0% {
         transform: rotate(0deg);

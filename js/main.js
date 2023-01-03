@@ -12,6 +12,8 @@ var app = (()=> {
     var caida = true
     var moveBoo = false
     var habMana = true
+    var audio = ""
+    var masterAudio = document.querySelector("audio")
     var body = document.body
     var x=0, y=0
     var saveObj = 0
@@ -41,12 +43,32 @@ var app = (()=> {
                 texto = textos[i];
                 t.innerHTML = texto+" <br> <i> Preciona x para continuar </i>"
             } else {
-                
-                t.remove()
-                lock = locker
-                public.mens = false
-                accionTecla.KeyX_Down = a
-                afterMessage()
+                if (pregunta.length > 0) {
+                    t.innerHTML = ""
+                    for (let p = 0; p < pregunta.length; p+=3) {
+                        const cuestion = pregunta[p];
+                        let nodo = document.createElement("div")
+                        nodo.onclick = ()=> {
+                            if(pregunta[p+1] > 0)
+                            acciones[pregunta[p+1]](pregunta[p+2])
+                            t.remove()
+                            lock = false
+                            public.mens = false
+                            accionTecla.KeyX_Down = a
+                            afterMessage()
+                        }
+                        nodo.innerHTML = cuestion
+                        nodo.classList.add("cuestion")
+                        t.appendChild(nodo)
+                    }
+                } else {
+                    t.remove()
+                    lock = locker
+                    public.mens = false
+                    accionTecla.KeyX_Down = a
+                    afterMessage()
+
+                }
             }
         }
     }
@@ -88,6 +110,11 @@ var app = (()=> {
         }
         if (gamer.h) {
             jugador.style.height = gamer.h+"px"
+            if(!gamer.top)
+            jugador.style.marginTop = (120 - gamer.h)+"px"
+            else
+            jugador.style.marginTop = gamer.top+"px"
+
         }
         buffRestore()
 
@@ -128,10 +155,12 @@ var app = (()=> {
         ataques: 0,
         hab: 1,
         combCount: 0,
+        objeto: [],
         activate: false,
         personajes: ["chara"],
         equipo: [],
         vidas: [],
+        dinero: 3000,
         buffs: {
             vel: 1,
             atq: 1,
@@ -145,7 +174,8 @@ var app = (()=> {
             inmune: 1,
             regen: 1,
             res: 1,
-            raf: 1
+            raf: 1,
+            mana: 1
         },
         pasiva: {
             vel: 1,
@@ -159,8 +189,9 @@ var app = (()=> {
             regen: 1,
             res: 1,
             raf: 1,
-            efectos: []
-
+            efectos: [],
+            mana: 1,
+            robo: 1
         },
         exp: {},
         potens: [],
@@ -217,7 +248,9 @@ var app = (()=> {
             regen: 1,
             res: 1,
             raf: 1,
-            efectos: []
+            efectos: [],
+            mana: 1,
+            robo: 1,
         }
         if (pasiva) {
             const emblema = emblemas[nombre]
@@ -227,25 +260,73 @@ var app = (()=> {
                 const pas = pasiva[i];
                 if (pas.select) {
                     select = pas
+                    let claves = ["pasiva", "activa", "hab1", "hab2", "hab", "method", 
+                    "param", "evol", "ulti", "ultiComb", "ultiTime"]
+                    if (gamer.method == 1) {
+                        if (select.nivel >= gamer.param && !select.evol) {
+                            pasivas[nombre][i].evol = true
+                            if (!gamer.personajes.includes(gamer.evol)) {
+                                app.giveChara(gamer.evol)
+                            }
+                            evolucion(gamer.evol, nombre)
+                            return
+                        }
+                    }
+                    if (select.cambio) {
+                        for (let j = 0; j < select.cambio.length; j+=2) {
+                            if(typeof(select.cambio[j]) == "string")
+                            if (select.cambio[j].charAt(0) == "!") {
+                                j++
+                            }
+                            const cambiar = select.cambio[j];
+                            const cambio = select.cambio[j+1];
+                            switch (cambiar) {
+                                case "hab1":
+                                    gamer.poderes[0] = cambio
+                                    break;
+                                case "hab2":
+                                    gamer.poderes[1] = cambio
+                                    break
+                                default:
+                                    gamer[cambiar] = cambio
+                                    break;
+                            }
+                        }
+                    }
                     for (let j = 0; j < pas.pasivas.length; j+=2) {
                         const p = emblema.movs[pas.pasivas[j]];
                         const k = Object.keys(p)
                         const v = pas.pasivas[j+1];
-                        if (pas.activa == pas.pasivas[j] && (p.min < pas.nivel || !p.min) ) {
-                            if(p.activa)
-                            gamer.poderes[2] = p.activa
+                        if (pas.activa == pas.pasivas[j] && (p.min <= pas.nivel || !p.min) ) {
+                            if(p.activa){
+                                gamer.poderes[2] = p.activa
+                            }
                         }
                         for (let l = 0; l < k.length; l++) {
                             const stat = k[l];
-                            if(stat != "pasiva"){
+                            if(!claves.includes(stat)){
                                 if(gamer.pasiva[stat])
                                 gamer.pasiva[stat] += p[stat] * parseFloat(v) 
                                 
-                            }
-                            else if((p.min <= pas.nivel || !p.min) && p.pasiva)
+                            } 
+                            else if(stat == "pasiva" && (p.min <= pas.nivel || !p.min) && p.pasiva)
                             gamer.pasiva.efectos.push(p.pasiva)
+                            else if(stat != "pasiva")
+                            switch (stat) {
+                                case "hab1":
+                                    gamer.poderes[0] = p.hab1
+                                    break;
+                                case "hab2":
+                                    gamer.poderes[1] = p.hab2
+                                    break
+                                default:
+                                    gamer[stat] = p[stat]
+                                    break;
+                            }
                         }
                     }
+
+
                 }
             }
             for (let i = 0; i < keys.length; i++) {
@@ -295,6 +376,8 @@ var app = (()=> {
     print.onclick = ()=> {
         print.remove()
         main.style.display = "block"
+        masterAudio.muted = false
+        masterAudio.play()
     }
     var jugador = persona("blue", galeria[gamer.sprs].normal, gh, gw)
     var vida = document.createElement("div")
@@ -484,6 +567,7 @@ var app = (()=> {
     var teclaA = 0
     var teclaS = 0
     var salMax = document.getElementById("salMax")
+    let sA
     accionTecla.KeyA_Down = ()=> {
         if(lock == false){
             aggCount("z")
@@ -491,7 +575,7 @@ var app = (()=> {
                 if (gamer.count[0]>=poderes[gamer.poderes[0]].count) {
                     if (teclaA == 0) {
                         var ac = activatePower(poderes[gamer.poderes[0]])
-                        let sA = setInterval(() => {
+                        sA = setInterval(() => {
                             teclaA++
                             if (ac) {
                                 jugador.firstChild.src = galeria[gamer.sprs].caida
@@ -507,29 +591,29 @@ var app = (()=> {
                             }
                             
                         }, poderes[gamer.poderes[0]].carga*100);
-                        accionTecla.KeyA_Up =()=> {
-                            if (teclaA > 0) {
-                                desactivatePower(poderes[gamer.poderes[0]])
-                                atackGamer(0, teclaA)
-                                salMax.parentElement.style.display = "none"
-                                window.clearInterval(sA)
-                                teclaA = 0
-                                accionTecla.KeyA_Up = null
-                            }
-                        }
                     }
                 }
             } else if(teclaS == 0)
             atackGamer(0, 10)
         }
     }
+    accionTecla.KeyA_Up =()=> {
+        if (teclaA > 0) {
+            desactivatePower(poderes[gamer.poderes[0]])
+            atackGamer(0, teclaA)
+            salMax.parentElement.style.display = "none"
+            window.clearInterval(sA)
+            teclaA = 0
+        }
+    }
+    let sS
     accionTecla.KeyS_Down = ()=> {
         if(lock == false){
             aggCount("x")
             if (poderes[gamer.poderes[1]].carga && gamer.count[1]>=poderes[gamer.poderes[1]].count && teclaA== 0) {
                 if (teclaS == 0) {
                     var ac = activatePower(poderes[gamer.poderes[1]])
-                    let sS = setInterval(() => {
+                    sS = setInterval(() => {
                         teclaS++
                         if (ac) {
                             jugador.firstChild.src = galeria[gamer.sprs].caida
@@ -542,20 +626,19 @@ var app = (()=> {
                             teclaS = 1
                         }
                     }, poderes[gamer.poderes[1]].carga*100);
-                    accionTecla.KeyS_Up =()=> {
-                        if (teclaS > 0) {
-                            desactivatePower(poderes[gamer.poderes[1]])
-                            atackGamer(1, teclaS)
-                            salMax.parentElement.style.display = "none"
-                            window.clearInterval(sS)
-                            teclaS = 0
-                            accionTecla.KeyS_Up = null
-
-                        }
-                    }
                 }
             } else if(teclaA == 0)
             atackGamer(1, 10)
+        }
+    }
+    accionTecla.KeyS_Up =()=> {
+        if (teclaS > 0) {
+            desactivatePower(poderes[gamer.poderes[1]])
+            atackGamer(1, teclaS)
+            salMax.parentElement.style.display = "none"
+            window.clearInterval(sS)
+            teclaS = 0
+
         }
     }
    function activatePower(poder = poderes[0]) {
@@ -573,12 +656,29 @@ var app = (()=> {
         return false
         
    }
-   function evolucion(nombre="") {
+   function obtenerPasiva(nombre) {
+        let pasiva = pasivas[nombre]
+        if(pasiva)
+        for (let i = 0; i < pasiva.length; i++) {
+            const pas = pasiva[i];
+            if (pas.select) {
+                return i
+            }
+        }
+   }
+   function evolucion(nombre="", past=gamer.nombre) {
         let salud = gamer.salud
         let carga = ultiActivate
+        let pasiva = obtenerPasiva(past)
+        let efecto = pasivas[past][pasiva]
         public.actualizar(nombre)
         gamer.salud = salud
         gamer.ultiActivate = carga
+        if(pasivas[nombre])
+        pasivas[nombre].push(efecto)
+        else
+        pasivas[nombre] = [efecto]
+        console.log(efecto)
    }
    function desactivatePower(poder = poderes[0]) {
         if (poder.changes ) {
@@ -790,7 +890,7 @@ var app = (()=> {
         jugador.style.marginTop = (100 - (personajes[gamer.nombre].h || 100))+"px"
         obj1()
         buffRestore()
-        loadSystem()
+        loadSystem(personajes[gamer.nombre], true)
         powImage()
         lock = false
     }
@@ -854,11 +954,80 @@ var app = (()=> {
                     if (prom > 100) {
                         prom = 100
                     }
+                    let pasiva = pasivas[gamer.equipo[i]]
+                    let select = (()=> {
+                        if (pasiva) {
+                            for (let i = 0; i < pasiva.length; i++) {
+                                const pas = pasiva[i];
+                                if (pas.select) {
+                                    index = i
+                                    return pas
+                                }
+                            }
+                        }
+                        return null
+                    })()
+                    if (!select && emblemas[gamer.equipo[i]]) {
+                        if (!pasiva) {
+                            pasivas[gamer.equipo[i]] = [{
+                                nombre: gamer.equipo[i],
+                                codigo: aleatorio(0, 100000),
+                                nivel: 1,
+                                select: true,
+                                activa: 0,
+                                pasivas: [],
+                                exp: 0,
+                                cambio: [],
+                                obj: 0
+                            }]
+                            pasiva = pasivas[gamer.equipo[i]]
+                        }
+                        select = pasiva[0]
+                    }
+                    let config = emblemas[gamer.equipo[i]]
+
                     let mensaje = creacion({tag:"div", class:"objeto", style:{}})
                     mensaje.innerHTML = "<div class='mirarImg'><img src="+galeria[equipo.sprs].normal+"></div> <div class='p'> \n\
                     Vida: <div class='vid'><div class='sal' style='width:"+(prom)+"%'></div></div>\n\
-                    Hab: "+objetos[equipo.hab].hab+"<br>"+objetos[equipo.hab].desc+" <br></div>"
+                    </div> Nivel: <span id='stack"+i+"'>--</span>"
                     mini.appendChild(mensaje)
+                    let span = document.getElementById("stack"+i)
+                    let subir = document.createElement("input")
+                    subir.type = "button"
+                    subir.value = "Subir nivel"
+                    
+                    if (select) {
+                        subir.onclick = ()=> {
+                            if (gamer.exp.experiencia > 0) {
+                                gamer.exp.experiencia--
+                                select.exp++
+                                if (select.exp > (config.experiencia*select.nivel)*select.nivel ) {
+                                    select.nivel++
+                                    if(app.gamer.exp[config.huevo])
+                                    gamer.exp[config.huevo]++
+                                    else
+                                    gamer.exp[config.huevo] = 1
+                                }
+                                mensaje.animate([
+                                    {border: "solid 1px black"},
+                                    {border: "solid 1px blue"},
+                                    {border: "solid 1px black"},
+                                ], {
+                                    duration: 500,
+                                    iterations: 1
+                                })
+                            }
+                            span.innerHTML = select.nivel
+                            if (gamer.exp.experiencia == 0) {
+                                subir.style.backgroundColor = "red"
+                            }
+                        }
+                        span.innerHTML = select.nivel
+                        mini.appendChild(subir)
+                        if (gamer.exp.experiencia == 0) {
+                            subir.style.backgroundColor = "red"
+                        }
+                    }
                     mensaje.onclick = ()=> {
                         if (keyQ <= 0) {
                             cambioPersonaje(i)
@@ -868,7 +1037,7 @@ var app = (()=> {
                 }
             } else {
                 var mensaje = creacion({tag:"div", class:"objeto", style:{}})
-                mensaje.innerHTML = "No tienes equipo. <p> Agrega equipo desde el cofre </p>"
+                mensaje.innerHTML = "No tienes equipo. <p> Agrega equipo desde la computadora </p>"
                 
                 mini.appendChild(mensaje)
 
@@ -884,27 +1053,7 @@ var app = (()=> {
 
         }
     }
-    function dataCriaLoad(i) {
-        const cria = criaturas[i]
-        gamer.sprs = cria.sprs
-        jugador.style.width = cria.w+"px"
-        jugador.style.height = cria.h+"px"
-        jugador.style.marginTop = (100 - cria.h)+"px"
-        gamer.poderes = cria.poderes
-        gamer.stat = cria.stat
-        saveObj = gamer.obj
-        gamer.obj = cria.obj
-        gamer.hab = cria.hab
-        gamer.i = i
-        hab = objetos[gamer.hab]
-        obj = objetos[gamer.obj]
-        gamer.cria = true
-        gamer.biyou = i
-        obj1()
-        powImage()
-        return cria        
-    }
-    function loadSystem(mod = personajes[gamer.nombre]) {
+    function loadSystem(mod = personajes[gamer.nombre], none = false) {
         charge1.style.width = ""
         charge2.style.width = ""
         charge3.style.width = ""
@@ -923,17 +1072,21 @@ var app = (()=> {
 
         extra.style.boxShadow = ""
         extra.style.backgroundColor = ""
-        gamer.mana = false
-        gamer.tanques = false
-        gamer.canal = {}
+        if (!none) {
+            gamer.mana = false
+            gamer.tanques = false
+            gamer.canal = {}
+        }
         tras.info = 0
         if (mod.sistema == 1) {
             tras.info = 2
-            gamer.canal = mod.canal
-            gamer.mana = mod.canal.mana || mod.vida
+            if (!none || !gamer.mana) {
+                gamer.canal = mod.canal
+                gamer.mana = mod.canal.mana || mod.vida
+            }
             charge2.style.display = "none"
             charge3.style.display = "none"
-            charge1.style.width = "100%"
+            charge1.style.width = ((100 * gamer.mana) / mod.canal.mana)+"%"
             charge1.style.background = gamer.stat.color
             extra.style.backgroundColor = "rgba(5, 72, 255, 0.445)"
             extra.style.boxShadow = "0px -5px 10px 0px blue"
@@ -941,9 +1094,11 @@ var app = (()=> {
         if (mod.sistema == 2 || mod.sistema == 3) {
             gamer.canal = mod.canal
             tras.info = 3
-            gamer.tanque = 0
-            gamer.tanques = mod.canal.tanques
-            gamer.carga = [0, 0, 0]
+            if(!none || !gamer.carga){
+                gamer.tanque = 0
+                gamer.tanques = mod.canal.tanques
+                gamer.carga = [0, 0, 0]
+            }
             if (mod.canal.tanques.length == 1) {
                 charge2.style.display = "none"
                 charge3.style.display = "none"
@@ -974,8 +1129,9 @@ var app = (()=> {
         extra.style.backgroundImage = "url("+array[tras.info]+")"
 
     }
-    accionTecla.KeyW_Down = ()=> {
+    accionTecla.KeyW_Down = (fun)=> {
         if (inMenu == false && lock == false) {
+            masterAudio.pause()
             mini.style.overflowY = "scroll"
             inMenu = true
             lock = true
@@ -1044,7 +1200,11 @@ var app = (()=> {
             Pod. Rafaga: <div><div style='width:"+sRaf+"%; background-color: "+cRaf+"'></div></div><br> \n\
             Def. Rafaga: <div><div style='width:"+sRes+"%; background-color: "+cRes+"'></div></div><br> \n\
             .Velocidad.: <div><div style='width:"+sVel+"%; background-color: "+cVel+"'></div></div><br> \n\
-            Hab: "+hab.hab+"<br>"+hab.desc+"</div>"
+            Hab: "+hab.hab+"<br>"+hab.desc+""
+            if (gamer.rol == "entrenador") {
+                stats.innerHTML += "<br> Dinero: "+gamer.dinero
+            }
+            stats.innerHTML += "</div>"
             mini.append(menu_letra, stats) 
             var obje = creacion({tag:"div", class:"objeto", style:{}})
             let objeto = objetos[gamer.obj]
@@ -1069,46 +1229,63 @@ var app = (()=> {
                 obj = objetos[0]
                 accionTecla.KeyW_Down()
             }
+           
 
             for (let i = 0; i < gamer.objetos.length; i++) {
                 const objeto_index = gamer.objetos[i];
                 let objeto = objetos[objeto_index]
                 let nodo = creacion({tag:"div", class:"objeto", style:{}})
                 nodo.innerHTML = objeto.nombre+"<p> "+objeto.descripcion+" </p>"
-                nodo.onclick = ()=> {
-                    if (gamer.obj > 0) {
-                        gamer.objetos[i] = gamer.obj
-                        gamer.obj = objeto_index
-                    } else {
-                        gamer.obj = objeto_index
-                        gamer.objetos[i] = 0
+                if (fun) {
+                    nodo.onclick = ()=> {
+                        fun(i)
                     }
-                    obj = objeto
-                    saveObj = gamer.obj
-                    if (gamer.cria) {
-                        dataCriaLoad(gamer.biyou)
-                    } else 
-                    gamer = Object.assign({}, gamer, personajes[gamer.nombre])
-                    if (obj.tipo == 1) {
-                        var keys = Object.keys(obj.caract)
-                        for (let i = 0; i < keys.length; i++) {
-                            const key = keys[i];
-                            gamer.buffs[key] *= obj.caract[key]
+                } else {
+                    nodo.onclick = ()=> {
+                        if (nivel.batalla) {
+                            return
                         }
-                    }
-                    if (obj.tipo == 3) {
-                        var keys = Object.keys(obj.caract)
-                        for (let i = 0; i < keys.length; i++) {
-                            const key = keys[i];
-                            if (key == "salud") {
-                                gamer[key] += gamer.vida * (obj.caract[key]/100)
-                            } else
-                            gamer[key] = obj.caract[key]
+                        if (gamer.obj > 0) {
+                            gamer.objetos[i] = gamer.obj
+                            gamer.obj = objeto_index
+                        } else {
+                            gamer.obj = objeto_index
+                            gamer.objetos[i] = 0
                         }
-                        obj = objetos[0]
-                        gamer.obj = 0
+                        obj = objeto
+                        saveObj = gamer.obj
+                        gamer = Object.assign({}, gamer, personajes[gamer.nombre])
+                        public.gamer = gamer
+                        obj1()
+                        if (obj.tipo == 3) {
+                            var keys = Object.keys(obj.caract)
+                            
+                            for (let i = 0; i < keys.length; i++) {
+                                const key = keys[i];
+                                if (key == "salud") {
+                                    gamer[key] += gamer.vida * (obj.caract[key]/100)
+                                } else
+                                gamer[key] = obj.caract[key]
+                            }
+                            obj = objetos[0]
+                            gamer.obj = 0
+                        }
+                        if (obj.tipo == 7) {
+                            if (gamer.method == 2 && gamer.param == objeto_index) {
+                                if(!gamer.personajes.includes(gamer.evol))
+                                app.giveChara(gamer.evol)
+                                evolucion(gamer.evol)
+                                obj = objetos[0]
+                                gamer.obj = 0
+                            } else {
+
+                                lock = true
+                                app.mensaje(["Este objeto no tendria efecto."])
+                            }
+                        }
+                        accionTecla.KeyW_Down()
                     }
-                    accionTecla.KeyW_Down()
+
                 }
                 if (objeto_index > 0) {
                     mini.appendChild(nodo)
@@ -1116,6 +1293,7 @@ var app = (()=> {
                 
             }
         } else if (inMenu == true && lock == true) {
+            masterAudio.play()
             mini.style.overflowY = ""
             lock = false
             inMenu = false
@@ -1123,6 +1301,7 @@ var app = (()=> {
             mini.append(img, vida, info)
         }
     }
+    
     accionTecla.KeyZ_Down = ()=> {
         if (lock == false) {
             aggCount("B")
@@ -1170,6 +1349,7 @@ var app = (()=> {
         pant.innerHTML = texto
         body.appendChild(pant)
         main.style.display = "none"
+        masterAudio.pause()
         return pant
     }
 var callendo = false
@@ -1275,6 +1455,7 @@ var callendo = false
                     
                 }
                 if (clases.includes("puerta") && clases[2] != "none") {
+
                     levelLoad(clases[2])
                     gamer.x = clases[3]
                     gamer.y = clases[4]
@@ -1412,22 +1593,29 @@ var callendo = false
     }
     public.keyQ2 = 10
     function cambioPersonaje(i) {
-        if (i >= gamer.equipo.length || keyQ > 0) {
+        if (i >= gamer.equipo.length || (keyQ > 0)) {
             return
         }
         let salud = gamer.salud
         let nombre = gamer.nombre
         let carga = ultiActivate
+        let objeto = gamer.obj
+        if(pasivas[gamer.nombre])
+        pasivas[gamer.nombre][obtenerPasiva(gamer.nombre)].obj = objeto
         public.actualizar(gamer.equipo[i])
         gamer.equipo[i] = nombre
         gamer.salud = gamer.vidas[i]
         gamer.vidas[i] = salud
         gamer.count = [100, 100, 100]
+        gamer.obj = gamer.objeto[i] || 0
+        gamer.objeto[i] = objeto
         ultiActivate = carga
         verificar()
         if (gamer.rol != "entrenador" && gamer.rol != "auxiliar")
-        keyQ = public.keyQ2
-        public.keyQ2 = 10
+        if (!nivel.ciudad) {
+            keyQ = public.keyQ2
+            public.keyQ2 = 10
+        }
         let q = setInterval(() => {
             if (keyQ < 1) {
                 window.clearInterval(q)
@@ -1530,6 +1718,7 @@ var callendo = false
                 mod.stat.vida = 0
             }
         }
+        gamer.carrito = []
         mods = []
         ubicacion = []
         bloqueos = []
@@ -1537,8 +1726,16 @@ var callendo = false
         gamer.y = nivel.y || 650
         move = true
         pantalla.style.marginLeft = "0px"
-        moveScreen(100)
         pantalla.style.backgroundColor = nivel.color
+        if(accionTecla.KeyE_Down)
+        accionTecla.KeyE_Down()
+        else 
+        moveScreen(100)
+        
+        if (nivel.start) {
+            nivel.start()
+        }
+       
         if (nivel.image) {
             pantalla.style.backgroundImage = "url("+nivel.image+")"
         }
@@ -1608,6 +1805,12 @@ var callendo = false
         for (let i = 0; i < nivel.npcs.length; i++) {
             const modInfo = nivel.npcs[i];
             let mod = npc(modInfo[0], modInfo[1], modInfo[2], modInfo[3], modInfo[4], modInfo[5])
+            if (modInfo[7]) {
+                mod.param = modInfo[7]
+            }
+            if (modInfo[8]) {
+                mod.batalla = modInfo[8]
+            }
             mod.spr.setAttribute("mod", i)
             mod.ofMove = 0
             pantalla.appendChild(mod.spr)
@@ -1691,10 +1894,10 @@ var callendo = false
                         }
                         if (mod.x-mod.pasoX != 0) {
                             pasos++
-                            mod.spr.firstChild.src = mod.sprs.mover[pasos%2]
+                           // mod.spr.firstChild.src = mod.sprs.mover[pasos%2]
                             
                         } else {
-                            mod.spr.firstChild.src = mod.sprs.normal
+                           // mod.spr.firstChild.src = mod.sprs.normal
                         }
                         
                         mod.pasoX = mod.x
@@ -1812,8 +2015,9 @@ var callendo = false
                         if (mod.barraVida) {
                             mod.barraVida.firstChild.style.width = 0+"%"
                         }
-                        if (gamer.method == 1 && mod.stat.vida > 0) {
+                        if (gamer.method == 3 && mod.stat.vida > 0) {
                             if (gamer.evo > gamer.param) {
+                                if(!gamer.personajes.includes(gamer.evol))
                                 public.giveChara(gamer.evol)
                                 lock = true
                                 public.mensaje(["Tu "+gamer.nombre+" a evolucionado a "+gamer.evol])
@@ -1847,14 +2051,7 @@ var callendo = false
                         }
                         mod.spr.firstChild.src = mod.sprs.perder
                         mod.spr.style.marginTop = "60px"
-                        if (mod.stat.obj > 0 && mod.y > 0) {
-                            var k = gamer.objetos.indexOf(0)
-                            if (k > -1) {
-                                gamer.objetos[k] = mod.stat.obj
-                            } else {
-                                gamer.objetos.push(mod.stat.obj)
-                            }
-                        }
+                      
                         
                         let d = setTimeout(() => {
                             mod.maldad = false
@@ -1909,13 +2106,6 @@ var callendo = false
                         bloqueos[cartel[3]+h] = []
                     }
                     for (let j = 0; j < cartel[0]; j++) {
-                        
-                        if (ubicacion[cartel[3]+h][cartel[2]+j]) {
-                            ubicacion[cartel[3]+h][cartel[2]+j].push("piso")
-                            
-                        } else {
-                            ubicacion[cartel[3]+h][cartel[2]+j] = ["piso"]
-                        }
                         if (bloqueos[cartel[3]+h][cartel[2]+j]) {
                             bloqueos[cartel[3]+h][cartel[2]+j].push(true)
                             
@@ -1937,7 +2127,8 @@ var callendo = false
                     h: height,
                     cartel: true,
                     accion: cartel[6],
-                    puerta: cartel[9] || false
+                    puerta: false,
+                    param: cartel[9] || 0
                 }
                 mods.push(acct)
             }
@@ -1946,6 +2137,28 @@ var callendo = false
         pantalla.appendChild(jugador)
         jugador.style.top = gamer.y+"px";
         jugador.style.left = gamer.x+"px"
+        let agg = ""
+        if (nivel.audio && audio != nivel.audio) {
+            masterAudio.src = songs[nivel.audio].url
+            masterAudio.load()
+            audio = nivel.audio
+        }
+        if (nivel.music && audio != nivel.music) {
+            masterAudio.src = songs[nivel.music].url
+            masterAudio.load()
+            agg += songs[nivel.music].credito
+            audio = nivel.music
+        }
+        if (nivel.letrero || agg != "") {
+            let letrero = document.createElement("div")
+            letrero.classList.add("letrero")
+            letrero.innerHTML = (nivel.letrero || "")+" <div>"+agg+"</div>"
+            jimi.appendChild(letrero)
+            let s = setTimeout(() => {
+                letrero.remove()
+                window.clearTimeout(s)
+            }, 3000);
+        }
         if (hab.tipo == 4) {
             hab.caract(gamer, 1)
             obj1()
@@ -1968,11 +2181,10 @@ var callendo = false
             public.giveItem((nivel.item[0] || nivel.item), (nivel.item[1] || 1))
         }
         public.levelLoad(nivel.salida)
-        if (gamer.saveX) {
-            gamer.x = gamer.saveX
-            gamer.y = gamer.saveY
-            accionTecla.KeyE_Down()
-        }
+        gamer.x = gamer.saveX
+        gamer.y = gamer.saveY
+        gamer.saveX = 0
+        accionTecla.KeyE_Down()
     }
     function buffRestore () {
         gamer.potens = []
@@ -1991,6 +2203,7 @@ var callendo = false
             res: 1,
             raf: 1,
             poderes: [-1, -1, -1],
+            mana: 1
             
         }
     }
@@ -2015,112 +2228,7 @@ var callendo = false
             }
         }
     }
-    function gamerVisible() {
-        if (gamer.buffs.visible < 1 || gamer.visible == false) {
-            return false
-        }
-        return true
-    }
-    var movs = [
-        function () {//0
-            return [false]
-        },
-        function (mod) {//1
-            var r = [false, false]
-            if (!mod.movBoo) {
-                if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
-                    mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                    if(gamerVisible())
-                    r = [false, true]
-                }
-                if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
-                    mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                    if(gamerVisible())
-                    r = [true, false]
-                }
-                
-            }
-            return r
-        },
-        function (mod) {//2
-            var r = [false, false]
-            if (mod.count[1] >= poderes[mod.poderes[1]].count) {
-                r = [false, true]
-                
-            } 
-            if (!mod.movBoo) {
-                var movimiento = (mod.stat.vel*mod.buffs.vel)*10
-                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
-                    if (gamer.x - mod.x < 0) {
-                        mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                    } else  {
-                        mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                    }
-                    if (gamer.y < mod.y ) {
-                        mod.y -= movimiento
-                    }
-                    if (gamer.y > mod.y) {
-                        mod.y += movimiento
-                    }
-                    if(gamerVisible() && r[1] == false)
-                    r = [true, false]
-                }
-            }
-            return r
-        },
-        function (mod) {//3
-            var r = [false, false]
-            if (!mod.movBoo && gamerVisible()) {
-                
-                if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
-                    if (gamer.x - mod.x < 0) {
-                        mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                    } else  {
-                        mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                    }
-                   
-                }
-                if (mod.count[1] >= poderes[mod.poderes[1]].count && ((gamer.x - mod.x > 50) || (mod.x - gamer.x > 50)) ) {
-                    r = [false, true]
-                } else {
-                    r = [true, false]
-                }
-            } else if(!mod.movBoo) {
-                r = movs[1](mod)
-            }
-            return r 
-        },
-        function (mod) {//4
-           let r = [false, false]
-           if (!mod.movBoo) {
-                r[0] = true
-                let movimiento = (mod.stat.vel*mod.buffs.vel)*10
-                if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
-                    mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                    
-                }
-                if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
-                    mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                  
-                }
-                if (gamer.y < mod.y ) {
-                    mod.y -= movimiento
-                }
-                if (gamer.y > mod.y) {
-                    mod.y += movimiento
-                }
-                if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
-                    r = [false, true]
-                }
-            }
-            
-            return r
-        },
-        function (mod) {
-           
-        }
-        
-    ]
+   
     function npc(tipo, especie, x=0, y=0, pasos=10, maldad=false) {
         var especies = {}
         let nuevas = Object.keys(entidades)
@@ -2394,14 +2502,7 @@ var callendo = false
             if (mod.cartel) {
                 if ((mod.x+mod.w >= xMove && mod.x-mod.w <= xMove) && (mod.y+mod.h >= yMove && mod.y-mod.h <= yMove)) {
                     if (lock == false) {
-                        if (mod.puerta) {
-                            lock = true
-                            public.mensaje(["Se necesita una llave para seguir"])
-
-                        }
-                        else {
-                            acciones[mod.accion](gamer, mods, j)
-                        }
+                        acciones[mod.accion]((mod.param || 0))
                         x = 0
                         move = false
                         moveBoo = false
@@ -2412,7 +2513,7 @@ var callendo = false
             if ((mod.x-50 <= xMove && mod.x+50 >= xMove) && (mod.y+100 >= yMove && mod.y-100 <= yMove)) {
                 if (mod.maldad == false) {
                     if (lock == false) {
-                        acciones[nivel.npcs[j][6]](gamer, mods, j)
+                        acciones[nivel.npcs[j][6]](mod.param)
                         x = 0
                         move = false
                         moveBoo = false
@@ -2425,6 +2526,9 @@ var callendo = false
     function ataque(atacker = gamer, enemy, val, ulti=false, xm = 0, ym= 0, start, carga=0) {
         let poder, trans, rapido = 1
         let damage = 1
+        if (nivel.puzzle) {
+            return
+        }
         if (enemy && val > 2) {
             poder = poderes[atacker.poderes[val]]
             val = 1
@@ -2470,7 +2574,7 @@ var callendo = false
                     if(!enemy)
                     return
                     else{
-                        poder = atacker.basico || Basico
+                        poder = atacker.stat.basico || Basico
                         basicEnemy = true
                     }
                 }
@@ -2496,7 +2600,7 @@ var callendo = false
                 poder = poderes[0]
             } else{
                 atacker.mana -= mana
-                if(poder.nombre)
+                if(poder.nombre && !ulti)
                 atacker.count[val] = 0
             }
         } else if (poder.mana) {
@@ -2511,11 +2615,30 @@ var callendo = false
             trans = true
         }
         let anim = ""
+        var spr = jugador
+        if (enemy) {
+            spr = atacker.spr
+            
+        }
+        var direc = 1
+        let side = 50
         let xmove = poder.x || 1
         let ymove = poder.y || 0
+        if (spr.firstChild.style.transform == "") {
+            direc = -1
+            side = 0
+            if (poder.xmove) {
+                xmove = poder.xmove
+            }
+        }
+       
         if (rapido > 0) {
             for (let i = 0; i < rapido; i++) { 
                 let zq = Object.assign({}, poder)
+                if (poder.speed) {
+                    zq = Object.assign(zq, poder.speed)
+                    zq.speed = null
+                }
                 zq.distancia += i+1+xmove
                 ataque(atacker, enemy, zq, ulti, (xmove*(i+1))*50, (ymove*(i+1))*50, null, -1)
             }
@@ -2527,21 +2650,11 @@ var callendo = false
             }
             return 1
         })()
-        var spr = jugador
-        var direc = 1
-        let side = 50
         var stundSelf = poder.stundSelf
         if (stundSelf) {
             atacker.stund = true
         }
-        if (enemy) {
-            spr = atacker.spr
-            
-        }
-        if (spr.firstChild.style.transform == "") {
-            direc = -1
-            side = 0
-        }
+       
         //let xsave = atacker.x
         let xMove = (atacker.x+side)+(xm*direc)
         if (poder.inicio) {
@@ -2581,7 +2694,10 @@ var callendo = false
         let cincuenta = poder.vel || 50
         let avance = (cincuenta)
         let robo = poder.robo || 0
-        
+        if (atacker.pasiva.robo > 1) {
+            robo *= atacker.pasiva.robo
+        }
+        robo *= atacker.buffs.regen * atacker.pasiva.regen
         let combi = {}
         avance *= direc
         if (hb.tipo == 2) {
@@ -2628,7 +2744,8 @@ var callendo = false
                 (stap*10),
                 damage,
                 (atacker.salud || atacker.stat.salud)*0.1,
-                (atacker.mana || 1)*0.1
+                (atacker.mana || 1)*0.1,
+                atacker.buffs.salto
             ]
             var ass = [ 
                 0, 
@@ -2642,7 +2759,8 @@ var callendo = false
                 (stap*10), //8
                 damage, //9
                 (atacker.vida || atacker.stat.vida)*0.1, // 10
-                (atacker.canal.mana || 1)*0.1 // 11    
+                (atacker.canal.mana || 1)*0.1, // 11
+                1 // salto - 12
             ]
             if(obj.stap > 0){
                 let uper = obj.stapPlus || 0 
@@ -2674,7 +2792,7 @@ var callendo = false
                 }
             }
             if (obj.robo > 0) {
-                robo += obj.robo
+                robo += obj.robo * atacker.buffs.regen * atacker.pasiva.regen 
             }
             if (obj.count) {
                 atacker.count[obj.count[0]] += obj.count[1]
@@ -2728,22 +2846,25 @@ var callendo = false
             }
         }
         if (atacker.ataques > 0 || val < 2) {
-            if (poder.efecto) {
+            if (poder.efecto || combo.timer) {
                 if (atacker.ataques%poder.combo == 0 || val < 2) {
+                    if(poder.efecto)
                     combo = Object.assign({}, poder.efecto)
                 }
             }
-            if (poder.estado) {
+            if (poder.estado || combi.timer) {
                 if (atacker.ataques%poder.combi == 0 || val < 2) {
-                    let o = Object.assign(combi, poder.estado)
+                    let o = combi
+                    if(poder.estado)
+                    o = Object.assign(combi, poder.estado)
                     if (!o.timer) {
                         o.timer = 5
                     }
                     o.aply = false
                     atacker.potens.push(o)
                     if (o.estado) {
-                        atacker.estado = poder.estado.estado
-                        atacker.tiempo = poder.estado.tiempo*10
+                        atacker.estado = o.estado
+                        atacker.tiempo = o.tiempo*10
                     } 
                     if (o.count) {
                         atacker.count[o.count[0]] += o.count[1] 
@@ -2775,6 +2896,9 @@ var callendo = false
             nodo = document.createElement("div")
             nodo.classList.add("div")
             nodo.innerHTML = anim
+            if (poder.z) {
+                nodo.style.zIndex = poder.z
+            }
             nodo.style.left = xMove +"px"
             nodo.style.top = yMove + "px"
             pantalla.append(nodo)
@@ -2795,10 +2919,10 @@ var callendo = false
         let i = 0
         let tiempo = poder.tiempo || 0
         let tiempoBoo = false
-        let tamX = poder.tamX || 30
+        let tamX = poder.tamX || 40
         let tamY = poder.tamY || 50
         if (poder.fun) {
-            poder.fun(atacker)
+            poder.fun(atacker, xMove, yMove)
         }
         let moveY = poder.moveY || 0
         cincuenta = Math.abs(avance)
@@ -2997,6 +3121,9 @@ var callendo = false
                             break;
                     }
                     function nor() {
+                        if (tiempoBoo) {
+                            return
+                        }
                         if (!nodo.firstChild.style.width) {
                             nodo.firstChild.style.width = "100px"
                         }
@@ -3037,7 +3164,7 @@ var callendo = false
                 }
                 if (enemy) {
 
-                    if ((gamer.x-tamX <= xMove && gamer.x+tamX >= xMove) && (gamer.y+tamY >= yMove && gamer.y-tamY <= yMove)) {
+                    if ((gamer.x >= xMove-tamX && gamer.x <= xMove) && (gamer.y <= yMove && gamer.y >= yMove-tamY)) {
                        
                         atacker.restore = 0 
                         restore = 0
@@ -3048,7 +3175,11 @@ var callendo = false
                         if (poder.res) {
                             def = gamer.stat.res*gamer.buffs.res*gamer.pasiva.res
                         }
-                        var shield = 5 + (gamer.salud * ((gamer.buffs.shield*gamer.buffs.shield)-1))
+                        var shield = 5 + ((gamer.vida * ((gamer.buffs.shield*gamer.buffs.shield)-1))/10)
+                        if (shield < 1) {
+                            damage -= shield
+                            shield = 1
+                        }
                         if (hab.tipo == 6) {
                             cange(Object.assign({leave:1, def:0, shield:0}, hab.caract), gamer)
                         }
@@ -3056,7 +3187,7 @@ var callendo = false
                             hb.caract.fun(atacker, gamer, poder)
                         }
                         if (hab.caract.cion) {
-                            hab.caract.cion(atacker, gamer, poder)
+                            damage = hab.caract.cion(atacker, gamer, poder, carga, damage) || damage
                         }
                         for (let i = 0; i < gamer.pasiva.efectos.length; i++) {
                             let efecto = gamer.pasiva.efectos[i];
@@ -3064,7 +3195,7 @@ var callendo = false
                                 cange(Object.assign({leave:1, def:0, shield:0}, efecto[0].caract), gamer)
                             }
                             if (efecto[1].cion) {
-                                efecto[1].cion(atacker, gamer, poder, carga)
+                                damage = efecto[1].cion(atacker, gamer, poder, carga, damage) || damage
                             }
                         }
                         if (obj.tipo == 6) {
@@ -3094,6 +3225,15 @@ var callendo = false
                             eMove(gamer, poder.distance, (poder.trapX || 0), (poder.trapY || 0))
                         }
                         nerf()
+                        if (hab.caract.tion) {
+                            hab.caract.tion(atacker, gamer, poder)
+                        }
+                        for (let i = 0; i < gamer.pasiva.efectos.length; i++) {
+                            let efecto = gamer.pasiva.efectos[i];
+                            if (efecto[1].tion) {
+                                efecto[1].tion(atacker, gamer, poder, carga)
+                            }
+                        }
                         if (!trans) {
                             atacker.atack = 0
                             if (poder.tele == 1 || poder.tele == 4 || stundSelf) {
@@ -3112,6 +3252,7 @@ var callendo = false
                             if (poder.duplex > 1) {
                                 if (atacker.duplex < poder.duplex) {
                                     atacker.duplex++
+                                    if(poder.guardStund || !atacker.stund)
                                     ataque(atacker, enemy, poder, 2, xmove, ymove)
                                 } else {
                                     atacker.duplex = 0
@@ -3128,7 +3269,7 @@ var callendo = false
                 } else {
                     for (let j = 0; j < mods.length; j++) {
                         const mod = mods[j];
-                        if ((mod.x-tamX <= xMove && mod.x+tamX >= xMove) && (mod.y+tamY >= yMove && mod.y-tamY <= yMove) && !mod.cartel) {
+                        if ((mod.x >= xMove-tamX && mod.x <= xMove) && (mod.y <= yMove+tamY && mod.y >= yMove) && !mod.cartel) {
                             if(mod.stat.salud > 0 && (mod.maldad || mod.especie == "bagstone") && !nivel.ciudad) {
                                 if (gamer.ultiComb) {
                                     gamer.combCount++
@@ -3140,7 +3281,11 @@ var callendo = false
                                 if (poder.res) {
                                     def = mod.stat.res * mod.buffs.res
                                 }
-                                var shield = 5 + (mod.stat.salud * (mod.buffs.shield - 1))
+                                var shield = 5 + ((mod.stat.vida * (mod.buffs.shield - 1))/10)
+                                if (shield < 1) {
+                                    damage -= shield
+                                    shield = 1
+                                }
                                 var leave = leaves(mod.tipos, mod.buffs.inmune)
                                 hb = objetos[mod.stat.hab]
                                 ob = objetos[mod.stat.obj]
@@ -3151,7 +3296,7 @@ var callendo = false
                                     cange(Object.assign({leave:1, def:0, shield:0}, ob.caract), mod)
                                 }
                                 if (hb.caract.cion) {
-                                    hb.caract.cion(gamer, mod, poder)
+                                    damage = hb.caract.cion(gamer, mod, poder, carga, damage) || damage
                                 }
                                 if (hab.caract.fun) {
                                     hab.caract.fun(gamer, mod, poder)
@@ -3162,7 +3307,7 @@ var callendo = false
                                 for (let i = 0; i < atacker.pasiva.efectos.length; i++) {
                                     let efecto = atacker.pasiva.efectos[i];
                                     if (efecto[1].fun) {
-                                        efecto[1].fun(atacker, mod, poder, carga)
+                                        damage = efecto[1].fun(atacker, mod, poder, carga, damage) || damage
                                     }
                                 }
                                 damage /= def 
@@ -3203,6 +3348,9 @@ var callendo = false
                                     eMove(mod, poder.distance, (poder.trapX || 0), (poder.trapY || 0))
                                 }
                                 nerf(mod)
+                                if (hb.caract.tion) {
+                                    hb.caract.tion(gamer, mod, poder)
+                                }
                                 let col = "rgba(200, 170, 60, 0.8)"
                                 if (critico > 1 && leave > 0) {
                                     col = "rgba(250, 150, 60, 0.8)"
@@ -3234,6 +3382,7 @@ var callendo = false
                                     if (poder.duplex > 1) {
                                         if (atacker.duplex < poder.duplex) {
                                             atacker.duplex++
+                                            if(poder.guardStund || !atacker.stund)
                                             ataque(atacker, enemy, poder, 2, xmove, ymove)
                                         } else {
                                             atacker.duplex = 0
@@ -3255,10 +3404,6 @@ var callendo = false
                     }
                 }
                 function nerf(defender = gamer) {
-                    if (poder.cion) {
-                        poder.cion(atacker, defender, poder)
-                    }
-                    
                     if (poder.stund) {
                         defender.stund = true
                         var spr = defender.spr
@@ -3272,6 +3417,10 @@ var callendo = false
                             window.clearTimeout(sStund)
                         }, poder.stund * 1000);
                     }
+                    if (poder.cion) {
+                        poder.cion(atacker, defender, poder, xMove, yMove)
+                    }
+                    
                     if(damage > 0)
                     verCarga(1, defender)
                     var key = Object.keys(combo)
@@ -3577,8 +3726,8 @@ var pasos = 0
                                     gamer.buffs.poderes = potencia.poderes
                                 }else{
                                     gamer.buffs[key] *= potencia[key]
-                                    var nodo = document.createElement("div")
-                                    var duration = (potencia.timer*1000) || 5000 
+                                    let nodo = document.createElement("div")
+                                    let duration = (potencia.timer*1000) || 5000 
                                     nodo.innerHTML = signos[key]
                                     if (potencia[key] < 1 && key != "caida") {
                                         nodo.firstChild.style.border = "1px solid red"
@@ -3588,7 +3737,7 @@ var pasos = 0
                                         {filter: "opacity(1)"},
                                         {filter: "opacity(0)"},
                                     ], {duration: duration})
-                                    var t = setTimeout(() => {
+                                    let t = setTimeout(() => {
                                         nodo.remove()
                                         window.clearTimeout(t)
                                     }, duration);
@@ -3657,11 +3806,11 @@ var pasos = 0
             
         }
         if (restore >= gamer.restore && gamer.salud < gamer.vida) {
-            gamer.salud += (gamer.buffs.regen*gamer.regen*gamer.pasiva.regen)*0.5
+            gamer.salud += (gamer.buffs.regen*gamer.regen*gamer.pasiva.regen)*0.3
             verificar()
         }
         if ((gamer.mana < gamer.canal.mana) && !gamer.tanques ) {
-            gamer.mana += (gamer.canal.charge || 1) * (1/(gamer.stat.caida*gamer.buffs.caida*gamer.pasiva.caida))*0.1
+            gamer.mana += ((gamer.canal.charge || 1) * gamer.buffs.mana * gamer.pasiva.mana)*0.1
             verificar()
 
         }
@@ -3697,21 +3846,21 @@ var pasos = 0
             personMove()
             if ((x != 0 && !gamer.atack) || (y != 0 && !gamer.atack)) {
                 if(x < 0 || y < 0)
-                jugador.firstChild.src = galeria[gamer.sprs].mover[pasos%2]
+                //jugador.firstChild.src = galeria[gamer.sprs].mover[pasos%2]
                 if (x > 0 || y > 0) {
 
-                    jugador.firstChild.src = galeria[gamer.sprs].mover[Math.abs((pasos%2)-1)]
+                  //  jugador.firstChild.src = galeria[gamer.sprs].mover[Math.abs((pasos%2)-1)]
                 }
                 pasos++
             }
             if (gamer.atack > 0) {
                 if (gamer.atack == 1) {
-                    jugador.firstChild.src = galeria[gamer.sprs].basico
+                   // jugador.firstChild.src = galeria[gamer.sprs].basico
                     
                 } else if (gamer.atack == 2) {
-                    jugador.firstChild.src = galeria[gamer.sprs].especial
+                    //jugador.firstChild.src = galeria[gamer.sprs].especial
                 } else {
-                    jugador.firstChild.src = galeria[gamer.sprs].ulti
+                   // jugador.firstChild.src = galeria[gamer.sprs].ulti
 
                 }
             }   
@@ -3722,17 +3871,18 @@ var pasos = 0
         } else if(lock == false) {
             velA = false
             if(y == 0 && teclaA == 0 && teclaS == 0)
-            jugador.firstChild.src = galeria[gamer.sprs].normal
+            if(jugador.firstChild.src != galeria[gamer.sprs].normal)
+            //jugador.firstChild.src = galeria[gamer.sprs].normal
             if (gamer.atack > 0) {
                 if (gamer.atack == 1) {
-                    jugador.firstChild.src = galeria[gamer.sprs].basico
+                    //jugador.firstChild.src = galeria[gamer.sprs].basico
                     
                 } else if (gamer.atack == 2) {
-                    jugador.firstChild.src = galeria[gamer.sprs].especial
+                    //jugador.firstChild.src = galeria[gamer.sprs].especial
                 } else if(gamer.atack == 3) {
-                    jugador.firstChild.src = galeria[gamer.sprs].ataque || galeria[gamer.sprs].basico
+                    //jugador.firstChild.src = galeria[gamer.sprs].ataque || galeria[gamer.sprs].basico
                 } else if(gamer.atack == 4) {
-                    jugador.firstChild.src = galeria[gamer.sprs].ulti
+                    //jugador.firstChild.src = galeria[gamer.sprs].ulti
                 }
                 velA = true
             }
@@ -3799,13 +3949,16 @@ var pasos = 0
     public.obj1 = obj1
     public.pasiva = pasivas
     public.cargarPasiva = cargarPasiva
+    public.keyW = (fun)=> {
+        accionTecla.KeyW_Down(fun)
+    }
     public.levelLoad = (n)=> {
+        
         gamer.enemys = 0
         if (typeof(n) == "number") {
             levelLoad(n)
         } else if(typeof(n) == "object") {
-            gamer.saveX = gamer.x
-            gamer.saveY = gamer.y
+            
             let o = {
                 color: "white",
                 piso: "#70c8a0",
@@ -3824,6 +3977,7 @@ var pasos = 0
                 npcs: []
             }
             o = Object.assign(o, n)
+
             for (let i = 0; i < o.pisos.length; i++) {
                 const piso = o.pisos[i];
                 if (piso == "piso") {
@@ -3833,8 +3987,12 @@ var pasos = 0
                     o.pisos[i] = [piso[1], piso[2], piso[3], piso[4], piso[5], piso[6], nivel, piso[7], piso[8]]
                 }
             }
+            if(!gamer.saveX){
+            gamer.saveX = gamer.x
+            gamer.saveY = gamer.y}
             levelLoad(o)
         }
+    
     }
     public.nivel = ()=> {
         return nivel

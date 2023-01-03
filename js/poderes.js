@@ -44,6 +44,10 @@ var visses= [
         {transform: "rotate(-90deg)"},
         {transform: "rotate(180deg)"}
     ],
+    [ // 10
+        {transform: "rotate(-90deg)", width: "0px", height: "0px"},
+        {transform: "rotate(180deg)", width: "50px", height: "100px"}
+    ],
 ]
 var Basico = {
     damage: 30,
@@ -236,7 +240,7 @@ var poderes = [
             tiempo: 100,
             block: {
                 nombre: "Sombra vil",
-                anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.webp' style='transform: rotateY(180deg)'></div>",
+                anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.gif' style='transform: rotateY(180deg)'></div>",
                 vis: [{width: "0px"}, {width: "100px"}],
                 trans: 1,
                 damage: 30,
@@ -264,7 +268,7 @@ var poderes = [
             distancia: -3,
             tipo: 9,
             efecto: {atq: 0.5, timer: 10},
-            anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.webp' style='transform: rotateY(180deg)'></div>",
+            anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.gif' style='transform: rotateY(180deg)'></div>",
             vis: [{width: "0px"}, {width: "100px"}],
             trans: 1,
         }
@@ -371,7 +375,7 @@ var poderes = [
         descripcion: "Carga para lanzar una pokeball, mientras mas cargue mas lejos va la pokeball. Si derrota a un pokemon salvaje con esta obtendra puntos de especie",
         anim: "<div class='pokeball' style='color:red'> </div>",
         cion: (at=app.gamer, df)=> {
-            if (df.stat.huevo && app.nivel) {
+            if (df.stat.huevo && app.nivel().salvaje) {
                 if (df.stat.salud <= 0) {
                     if (at.obj == 10) {
                         at.obj = 0
@@ -384,12 +388,12 @@ var poderes = [
                             pasivas: [aleatorio(0, emblemas[df.especie].movs.length), aleatorio(1, 2)],
                             exp: 0
                         }
+                        if (!at.personajes.includes(df.especie)) {
+                            app.giveChara(df.especie)
+                        }
                         if (at.pasiva[df.especie]) {
                             at.pasiva[df.especie].push(cria)
                         } else {
-                            if (!at.personajes.includes(df.especie)) {
-                                app.giveChara(df.especie)
-                            }
                             at.pasiva[df.especie] = [cria]
                         }
 
@@ -446,13 +450,13 @@ var poderes = [
         damage: 30,
         distance: 6,
         trapX: 40,
-        distancia: 4,
+        distancia: -4,
         x: -3,
         boom: {
             nombre: "Bola sombra",
             tipo: 10,
             damage: 80,
-            distancia: 8,
+            distancia: -12,
             anim: "<div style='background-color: black; color: black; width: 100px' class='luna'></div>",
             vis: visses[1],
             class: 2,
@@ -747,7 +751,7 @@ var poderes = [
                 marcas(at, "recerba", at.recerba+"", 4, "recerba", ["background", "white"])
 
             } else {
-                at.salud += at.vida*0.5
+                at.salud += at.vida*0.2
             }
         }
     },
@@ -961,7 +965,7 @@ var poderes = [
         transis: visses[9],
         tamY: 100,
         distancia: 4,
-        estado: {atq: 1.1, vat: 1.2},
+        estado: {atq: 1.5, vat: 1.5},
         stund: 1.5,
         count: 15
     },
@@ -980,7 +984,7 @@ var poderes = [
             tiempo: 100,
             block: {
                 nombre: "Sombra vil",
-                anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.webp' style='transform: rotateY(180deg)'></div>",
+                anim: "<div class='persona' style='filter: opacity(0.5) hue-rotate(-154deg)'><img src='img/shuppet.gif' style='transform: rotateY(180deg)'></div>",
                 vis: [{width: "0px"}, {width: "100px"}],
                 trans: 1,
                 damage: 20,
@@ -992,9 +996,461 @@ var poderes = [
         mana: 5,
 
     },
-]
+    {// 47
+        nombre: "Ladron",
+        damage: 40,
+        tipo: 17,
+        distancia: 6,
+        count: 20,
+        anim: "<div class='golpeMano' style='color: rgb(40, 40, 40)'></div>",
+        vis: visses[0],
+        descripcion: "Lanza un golpe que si alcanza a un enemigo con objeto se lo pondra a si mismo solo si no tiene ninguno",
+        cion: (at, df)=> {
+            if (at.obj == 0 && df.stat.obj > 0) {
+                at.obj = df.stat.obj
+                df.stat.obj = 0
+                app.obj1()
+            }
+        }
+    },
+    { // 48 - gastly
+        nombre: "Lenguetazo",
+        damage: 10,
+        tipo: 7,
+        distancia: 6,
+        distance: 5,
+        trapX: -30,
+        count: 6,
+        anim: "<div class='lengua' style='z-Index:0'></div>",
+        stundSelf: true,
+        class: 1,
+    },
+    { // 49 - gastly
+        nombre: "Polucion",
+        damage: 10,
+        tipo: 3,
+        distancia: 7,
+        rapido: 2,
+        efecto: {estado: 11, tiempo: 30},
+        anim: "<div class='circle' style='background-color: rgba(200, 100, 200, 0.5); width: 100px'></div>",
+        vis: visses[0],
+        raf: true,
+        res: true
+    },
+    {// 50 - haunter
+        nombre: "Puño sombra",
+        damage: 60,
+        tipo: 7,
+        distancia: 7,
+        tele: 2,
+        anim: "<div class='golpeMano' style='color: purple'></div>",
+        efecto: {vel: 0.8, timer: 1.2, count: [1, 1]},
+        count: 4
+    },
+    {// 51 - haunter
+        nombre: "Carga toxica",
+        damage: 50,
+        tipo: 3,
+        distancia: 7,
+        anim: "<div class='toxico'></div>",
+        efecto: {estado: 11, tiempo: 40},
+        cion: (at, df)=> {
+            if (df.estado > 0) {
+                app.ataque(at, false, {
+                    damage: 20,
+                    tipo: 3,
+                    raf: true,
+                    res: true,
+                    distancia: 9,
+                    estado: {raf: 1.5, timer: 3}
+                })
+            }
+        },
+        raf: true,
+        res: true,
+        count: 6
+    },
+    {// 52 - Gengar
+        nombre: "Infortunio",
+        damage: 65,
+        tipo: 7,
+        distancia: 7,
+        tele: 2,
+        anim: "<div class='fatuo'></div><div class='fatuo'></div>",
+        cion: (at, df)=> {
+            if (df.estado > 0) {
+                app.ataque(at, false, {
+                    damage: 0,
+                    tipo: 7,
+                    raf: true,
+                    res: true,
+                    distancia: 9,
+                    estado: {raf: 1.5, timer: 3.2}
+                })
+                at.count[0] += 5
+            }
+        },
+        raf: true,
+        res: true,
+        count: 6
+    },
+    {// 53 - gengar
+        nombre: "Bomba lodo",
+        damage: 40,
+        tipo: 3,
+        distancia: 5,
+        raf: true,
+        res: true,
+        count: 6,
+        efecto: {estado: 11, tiempo: 50},
+        anim: "<div class='circle' style='background-color: rgba(200, 100, 200, 0.9); width: 100px; margin-top: 50px'></div>",
+        vis: visses[0],
+        bomba: {
+            nombre: "Bomba lodo",
+            damage: 0,
+            tipo: 3,
+            distancia: 2,
+            efecto: {estado: 11, tiempo: 50, vel: 0.75},
+            tiempo: 30,
+            anim: "<div class='circle' style='background-color: rgba(200, 100, 200, 0.9); width: 100px; margin-top: 100px'></div>",
+            vis: visses[0],
+        }
+    },
+    {// 54 activa - gengar
+        nombre: "Puño sombra",
+        damage: 40,
+        tipo: 7,
+        distancia: 7,
+        anim: "<div class='golpeMano' style='color: purple'></div>",
+        tele: 2,
+        count: 20,
+        trans: 3,
+        efecto: {vel: 0.8, timer: 5}
+    },
+    {// 55 petilil
+        nombre: "Absorber",
+        damage: 40,
+        tipo: 12,
+        distancia: 7,
+        robo: 50,
+        anim: "<div class='petalo'></div>",
+        class: 2,
+        transis: visses[10],
+        raf: true,
+        res: true
+    },
+    {// 56 petilil
+        nombre: "Encanto",
+        tipo: 9,
+        damage: 40,
+        distancia: 8,
+        anim: "<div class='corazon' style='--h: 20px; --w: 20px; --e: -10px; --s: -10px; --c: yellowgreen; margin-top: 30px'></div>",
+        stund: 1.2,
+        raf: true,
+        res: true
+    },
+    {// 57 lilligant
+        nombre: "Gigadrenado",
+        damage: 60,
+        tipo: 12,
+        distancia: 8,
+        robo: 50,
+        anim: "<div class='tornado' style='--t: 1s'><div class='petalo'></div><div class='petalo'></div></div>",
+        block: {
+            nombre: "gigadrenado",
+            damage: 20,
+            distancia: 6,
+            tipo: 12,
+            robo: 100,
+            anim: "<div class='petalo'></div>",
+            class: 2,
+            transis: visses[10],
+        },
+        count: 7,
+        raf: true,
+        res: true
+    },
+    {// 58 lilligant
+        nombre: "Danza aleteo",
+        damage: 50,
+        tipo: 6,
+        distancia: 8,
+        estado: {raf: 1.3, vel: 1.5, timer: 4},
+        anim: "<div class='petalo' style='--c:green; --b:yellowgreen;'></div>",
+        class: 2,
+        transis: visses[10],
+        y: -3,
+        stund: 1.2,
+        block: {
+            noX: true,
+            moveY: 1,
+            damage: 30,
+            efecto: {vel: 0.75, res: 0.75, timer: 3},
+            distancia: 4,
+            anim: "<div class='petalo' style='--c:green; --b:yellowgreen;'></div>",
+            class: 2,
+            transis: visses[10],
+            tipo: 6
+        },
+        inicio: {
+            nombre: "",
+            damage: 50,
+            tipo: 6,
+            distancia: -8,
+            anim: "<div class='petalo' style='--c:green; --b:yellowgreen;'></div>",
+            class: 2,
+            transis: visses[10],
+            y: -3,
+            stund: 1.2,
+            block: {
+                noX: true,
+                moveY: 1,
+                damage: 30,
+                efecto: {vel: 0.75, res: 0.75, timer: 3},
+                distancia: 4,
+                anim: "<div class='petalo' style='--c:green; --b:yellowgreen;'></div>",
+                class: 2,
+                transis: visses[10],
+                tipo: 6,
+                raf: true,
+                res: true  
+            },
+            raf: true,
+            res: true  
+        },
+        tail: [
+            {marginLeft: "0px"},
+            {marginLeft: "-50px"},
+            {marginLeft: "50px"},
+            {marginLeft: "0px"},
+        ],
+        count: 9,
+        stundSelf: true,
+        raf: true,
+        res: true  
+    },
+    {// 59 - activa
+        nombre: "Sintesis",
+        damage: 0,
+        distancia: 1,
+        tiempo: 40,
+        count: 30,
+        anim: "<div class='campo' style='height: 100px; width: 300px; z-Index: 0'></div>",
+        z: 0,
+        fun: (at, x, y)=> {
+            if (typeof(x) == "object") {
+                return
+            }
+            let t = 0
+            let s = setInterval(() => {
+                if ((at.x <= x+300 && at.x >= x) && (at.y <= y && at.y >= y-100)) {
+                    if(at.salud+10 < at.vida)
+                        at.salud += 1
+                    else if (at.salud < at.vida)
+                        at.salud = at.vida
+                }
+                t+= 1
+                if (t >= 40) {
+                    window.clearInterval(s)
+                }
+            }, 100);
+        }
+    },
+    {// 60
+        nombre: "Dia soleado",
+        damage: 70,
+        distancia: 7,
+        count: 25,
+        anim: "<div class='medialuna' style='color: orange'></div>",
+        vis: visses[0],
+        distance: 5,
+        trapX: 30,
+        tipo: 10,
+        raf: true,
+        res: true,
+        inicio: {
+            nombre: "Dia soleado",
+            damage: 40,
+            distancia: -10,
+            count: 25,
+            anim: "<div class='medialuna' style='color: orange'></div>",
+            vis: visses[0],
+            distance: 5,
+            trapX: 30,
+            tipo: 10,
+
+        },
+        fun: (at)=> {
+            if (!at.sol) {
+                at.sol = true
+                let s = setTimeout(() => {
+                    at.sol = false
+                    window.clearTimeout(s)
+                }, 8000);
+            }
+        }
+    },
+     {// 61
+        nombre: "Danza lluvia",
+        damage: 0,
+        tipo: 12,
+        distancia: 2,
+        count: 20,
+        estado: {vat: 2, timer: 3, inmune: 0.9},
+        tail:  [
+            {boxShadow: "0px 0px 0px 0px blue"},
+            {boxShadow: "0px -100px 100px 10px skyblue"},
+        ],
+        fun: (at)=> {
+            if (!at.lluvia) {
+                at.lluvia = true
+                let s = setTimeout(() => {
+                    at.lluvia = false
+                    window.clearTimeout(s)
+                }, 5000);
+            }
+        }
+    },
+    {// 62
+        nombre: "Granizo",
+        damage: 30,
+        tipo: 15,
+        distancia: 4,
+        stund: 2,
+        count: 20,
+        anim: "<div style='background-color:#624308; width: 50px; height: 50px; margin-top: 100px; border-radius: 10px'></div>",
+        vis: visses[0],
+        class: 1,
+        inicio: {
+            damage: 30,
+            tipo: 15,
+            distancia: -4,
+            stund: 2,
+            count: 20,
+            anim: "<div style='background-color:#624308; width: 50px; height: 50px; margin-top: 100px; border-radius: 10px'></div>",
+            vis: visses[0],
+            class: 1,
+        },
+        fun: (at)=> {
+            if (!at.hielo) {
+                at.hielo = true
+                let s = setTimeout(() => {
+                    at.hielo = false
+                    window.clearTimeout(s)
+                }, 5000);
+            }
+        }
+    },
+    { // 63
+        nombre: "Torm. Arena",
+        damage: 0,
+        distancia: 5,
+        count: 20,
+        tipo: 5,
+        anim: "<div class='flecha'></div>",
+        x: -2,
+        distance: 3,
+        trapX: 30,
+        boom: {
+            damage: 1,
+            distancia: 2,
+            trans: 2,
+            tipo: 5,
+            vel: 10,
+            anim: "<div style='background-color: #624308; width: 50px'></div>",
+            vis: visses[2],
+            distance: 3,
+            trapX: 10,
+            tiempo: 40,
+            tamY: 100
+        },
+        inicio: {
+            damage: 0,
+            distancia: 5,
+            count: 20,
+            tipo: 5,
+            anim: "<div class='flecha'></div>",
+            x: -2,
+            distance: 3,
+            trapX: 30,
+            boom: {
+                damage: 1,
+                distancia: 2,
+                trans: 2,
+                tipo: 5,
+                vel: 10,
+                anim: "<div style='background-color: #624308; width: 50px'></div>",
+                vis: visses[2],
+                distance: 3,
+                trapX: 10,
+                tiempo: 40,
+                tamY: 100
+            },
+        },
+        fun: (at)=> {
+            if (!at.torm) {
+                at.torm = true
+                let s = setTimeout(() => {
+                    at.torm = false
+                    window.clearTimeout(s)
+                }, 5000);
+            }
+        }
+    },
+    {// 64 
+        nombre: "Sustituto",
+        damage: 0,
+        distancia: 1,
+        tiempo: 50,
+        estado: {inmune: 0.9, timer: 5, salto: 1.5, caida: 1.5, regen: 1.5},
+        stundSelf: true,
+        anim: "<div class='persona' style='margin-top: 50px'><img src='img/substitute.gif' style='width: 40px; height: 50px; transform: rotateY(180deg)'></div>",
+        count: 30,
+    },
+    {// 65 - activa de lilligant
+        nombre: "Danza petalo",
+        damage: 40,
+        distancia: 7,
+        tele: 1,
+        trans: 3,
+        tail: "def",
+        x: -3,
+        bomba: {
+            damage: 10,
+            distancia: -7,
+            efecto: {vel: 0.7, timer: 0.5},
+            trans: 3,
+            tiempo: 30,
+            tamX: 300,
+            anim: "<div style='background-color:rgba(200, 255, 200, 0.7); width: 50px; height: 50px; margin-top: 100px; border-radius: 10px'></div>",
+            vis: visses[0],
+            class: 1,
+        }
+    }
+]   
 
 /*
+var Tipos = [
+    "normal", //0
+    "lucha", //1
+    "volador", //2
+    "veneno", //3
+    "tierra", //4
+    "roca", //5
+    "bicho", //6
+    "fantasma", //7
+    "acero", //8
+    "hada", //9
+    "fuego", //10
+    "agua", //11
+    "planta", //12
+    "electrico", //13
+    "psiquico", //14
+    "hielo", //15
+    "dragon", //16
+    "siniestro" //17
+
+]
     0) No hace nada
     1) Aumenta una caracteristica
     2) Interviene en el sistema de combate como atacante
@@ -1018,6 +1474,7 @@ var signos = {
     regen: "<div style='background-color: rgba(120, 250, 120)' class='signo'>Regen</div>",
     res: "<div style='background-color: rgba(120, 150, 200)' class='signo'>Def. Raf</div>",
     raf: "<div style='background-color: rgba(220, 100, 250)' class='signo'>Raf</div>",
+    mana: "<div style='background-color: rgba(220, 100, 250)' class='signo'>Mana</div>"
 }
 
 var objetos = [
@@ -1037,6 +1494,7 @@ var objetos = [
         desc: "Aumenta mucho el ataque fisico, pero disminuye tu velocidad.",
         tipo: 1,
         caract: {atq: 2.5, vel: 0.75},
+        valor: 2000
     },
     { // 2
         nombre: "Velocidad X",
@@ -1045,6 +1503,7 @@ var objetos = [
         desc: "Al tener poca vida aumenta la velocidad y elimina cualquier efecto de estado.",
         tipo: 3,
         caract: {estado: 2, tiempo: 300},
+        valor: 700
     },
     { // 3
         nombre: "Restos",
@@ -1052,7 +1511,8 @@ var objetos = [
         hab: "Compensacion",
         desc: "Aguantas mejor los golpes mientras mas vida tengas",
         tipo: 6,
-        caract: {shield: 30, def: 5}
+        caract: {shield: 30, def: 5},
+        valor: 2000
     },
     { // 4
         nombre: "Pepita de oro",
@@ -1069,7 +1529,7 @@ var objetos = [
                 }
             }
         },
-        valor: 1
+        venta: 3000
     },
     { //5
         
@@ -1125,7 +1585,8 @@ var objetos = [
                 }
                 return c
             }
-        }, }
+        }, },
+        valor: 2000
     },
     {//7
         nombre: "Baya grana",
@@ -1186,7 +1647,8 @@ var objetos = [
         descripcion: "Mejoran los ataques de los entrenadores, les añaden efectos de captura",
         tipo: 4,
         valor: 0,
-        caract: {}
+        caract: {},
+        valor: 200
     },
     {// 11
         hab: "Anti balas", // chesnaught
@@ -1305,7 +1767,8 @@ var objetos = [
         nombre: "Resistencia X",
         descripcion: "Al ser usado aumenta su defensa especial y obtiene un escudo.",
         tipo: 3,
-        caract: {estado: 4, tiempo: 15}
+        caract: {estado: 4, tiempo: 15},
+        valor: 700
     },
     {// 16 - feraligatr
         nombre: "Cinta fuerte",
@@ -1314,6 +1777,7 @@ var objetos = [
         desc: "Aumenta el daño infligido al tener mas buffs de ataque",
         tipo: 2,
         caract: {dam: 2, stap: 1},
+        valor: 2000
     },
     {// 17 - ursaring
         hab: "Agallas",
@@ -1336,7 +1800,89 @@ var objetos = [
         nombre: "Pocion",
         descripcion: "Aumenta un poco de ps del usuario",
         tipo: 3,
-        caract: {salud: 30}
+        caract: {salud: 30},
+        valor: 200
+    },
+    {// 19
+        nombre: "Pildora habilidad",
+        descripcion: "Sirve para cambiar la habilidad de un pokemon",
+        tipo: 4,
+        caract: {},
+        valor: 3000
+    },
+    {// 20
+        nombre: "Baya tamate",
+        descripcion: "Sirve para disminuir puntos de mejora de habilidades de cambio, si se lleva equipada disminuye la velocidad del enemigo golpeado",
+        tipo: 2,
+        caract: {combo: {vel: 0.9}},
+        
+    },
+    {// 21
+        nombre: "MT 01 - Ladron",
+        descripcion: "Se usa para aprender 'ladron'. Si un pokemon la lleva equipada, robara un poco de velocidad de ataque a los enemigos con sus habilidades",
+        tipo: 2,
+        caract: {combo: {vat: 0.9, timer: 2}, combi: {vat: 1.1, timer: 2}}
+
+    },
+    {// 22 - gengar
+        nombre: "Globo helio",
+        descripcion: "Un globo que aumenta la velocidad de movimiento y ataque al lanzar ataques",
+        hab: "Levitacion",
+        desc: "Cuando lanza habilidades obtiene velocidad de ataque y movimiento",
+        tipo: 2,
+        caract: {combi: {vel: 1.2, vat: 1.5, timer: 4}}
+    },
+    {// 23 - banette 2
+        nombre: "Baya Zanama",
+        descripcion: "Al lanzar habilidades gana un poco de regeneracion de mana",
+        hab: "Insomnio",
+        desc: "Lanzar habilidades aumenta la regeneracion de mana. Cuando se le incapacita entrara en estado inmortal y ganara buff de ataque y velocidad, este efecto tiene un enfriamiento de 10s",
+        tipo: 2,
+        caract: {combi: {mana: 1.2, timer: 3}, tion: (at, df)=> {
+            if (at && df) {
+                if (df.stund && !df.insomnio) {
+                    
+                    app.ataque(df, (df.spr != null), {
+                        distancia: 2,
+                        damage: 0,
+                        estado: {estado: 12, tiempo: 5, atq: 1.5, vel: 1.5, timer: 5},
+                        tail:  [
+                            {boxShadow: "0px 0px 0px 0px gray"},
+                            {boxShadow: "0px -100px 100px 10px black"},
+                        ],
+                    })
+                    df.stund = false
+                    df.insomnio = true
+                    if (df.insomne) {
+                        del(df, "insomne", "insomne")
+                    }
+                    let s = setTimeout(() => {
+                        marcas(df, "insomne", "1", 2, "insomne")
+                        df.insomnio = false
+                        window.clearTimeout(s)
+                    }, 10000);
+                }
+            }
+        }}
+    },
+    {// 24 - petilil y lilligant de teselia
+        nombre: "Metronomo",
+        descripcion: "Aumenta la velocidad de ataque con cada golpe de habilidades y potencia el daño al tener mas velocidad de ataque",
+        hab: "Ritmo propio",
+        desc: "Cada golpe aumenta la vel de ataque. Cuando golpeas a un enemigo dejaras un soneto en el, cuando golpees a un enemigo con soneto disminuira tus tiempos de recarga.",
+        tipo: 2,
+        caract: {combi: {vat: 1.2, timer: 3}, stap: 1, fun: (at, df, pod)=> {
+            if (at && df) {
+                if (pod.nombre) {
+                    if (df.soneto) {
+                        at.buffs.salto *= 1.2
+                        del(df, "soneto", "soneto")
+                    } else {
+                        marcas(df, "soneto", "1", 2, "soneto")
+                    }
+                }
+            }
+        }}
     }
 ]
 
@@ -1351,7 +1897,7 @@ var ultis = [
         mana: 0
     },
     { // 1
-        nombre: "Destino fatal",
+        nombre: "Fantasma de ultratumba",
         damage: 40,
         distancia: 4,
         distance: 5,
@@ -1466,7 +2012,103 @@ var ultis = [
             class: 1
         }
    },
-   
+   {// 6 - gengar
+        nombre: "Sobresalto",
+        damage: 0,
+        tipo: 7,
+        distancia: 1,
+        tail:  [
+            {boxShadow: "0px 0px 0px 0px gray"},
+            {boxShadow: "0px -100px 100px 10px purple"},
+        ],
+        estado: {visible: 0.9, raf: 1.5, salto: 100, poderes: [0, 0], estado: 2, timer: 5, tiempo: 5},
+        fun:()=> {
+            app.gamer.ulti = 7
+            let s = setTimeout(() => {
+                app.gamer.ulti = 6
+                window.clearTimeout(s)
+            }, 5000);
+        }
+   },
+   {// 7 - gengar
+        nombre: "Sobresalto",
+        damage: 100,
+        tipo: 7,
+        distancia: 4,
+        anim: "<div class='fatuo'></div><div class='fatuo'></div>",
+        raf: true,
+        res: true,
+        estado: {count: [0, 100], poderes: [-1, -1]},
+        inicio: {
+            damage: 100,
+            tipo: 7,
+            distancia: -4,
+            anim: "<div class='fatuo'></div><div class='fatuo'></div>",
+            raf: true,
+            res: true,
+            estado: {count: [1, 100]},
+        },
+        fun:()=> {
+            app.gamer.ulti = 6
+            app.gamer.buffs.salto = 1
+        }
+   },
+   {// 8 - lilligant
+        nombre: "Danza majestuosa",
+        damage: 40,
+        tipo: 12,
+        distancia: 5,
+        tele: 1,
+        x: -9,
+        y: -2,
+        xmove: 2,
+        bomba: {
+            nombre: "Danza majestuosa",
+            distancia: 1,
+            tipo: 12,
+            damage: 60,
+            tamX: 400,
+            tamY: 300,
+            tiempo: 40,
+            anim: "<div class='campo' style='height: 300px; width: 600px; z-Index: 0'></div>",
+            efecto: {vel: 0.9, timer: 1.2},
+            raf: true,
+            res: true,
+            x: -6,
+            y: -1,
+            inicio: {
+                nombre: "Danza majestuosa",
+                distancia: 8,
+                damage: 40,
+                mana: 1,
+                tipo: 12,
+                anim: "<div class='tornado' style='--t: 1s; --w: 25px; --h: 50px '><div class='petalo'></div><div class='petalo'></div><div class='petalo'></div>",
+                tamY: 300,
+                raf: true,
+                res: true,
+                stundSelf: true,
+                duplex: 4,
+                tail: [
+                    {marginLeft: "0px"},
+                    {marginLeft: "-50px"},
+                    {marginLeft: "50px"},
+                    {marginLeft: "0px"},
+                ],
+                inicio: {
+                    nombre: "Danza majestuosa",
+                    distancia: -8,
+                    damage: 40,
+                    tipo: 12,
+                    mana: 1,
+                    anim: "<div class='tornado' style='--t: 1s; --w: 25px; --h: 50px '><div class='petalo'></div><div class='petalo'></div><div class='petalo'></div>",
+                    y: 300,
+                    raf: true,
+                    res: true,
+                }
+            }
+        }
+
+   }
 ]
 var nombreEstado = [
     "Normal", // 0
@@ -1482,6 +2124,7 @@ var nombreEstado = [
     "Congelado", //10
     "Envenenado", // 11
     "Inmortal", // 12
+    "Intoxicado"
 ]
 var desEstado = [
     "Esta normal, sin ninguna mejora",
@@ -1491,10 +2134,10 @@ var desEstado = [
     "Aumenta la defensa especial, gana un escudo al obtener este estado y pierde cualquier efecto de control al momento de obtenerlo",
     "Aumenta la defensa fisica, se vuelve inmune al daño por un corto periodo de tiempo",
     "Aumenta el ataque fisico y especial ademas agrega un poco de escudo y velocidad de ataque",
-    "Disminuye el ataque y va disminuyendo poco a poco la vida del portador",
+    "Disminuye el ataque y ataque especial y va disminuyendo poco a poco la vida del portador",
     "Disminuye la velocidad de movimiento y ataque del portador",
     "Disminuye las defensas y la velocidad de movimiento del portador",
-    "Disminuye el ataque especial del portador y va quitando vida poco a poco",
+    "Disminuye los efectos de curacion y escudo del portador y va quitando vida poco a poco",
     "Quita vida progresivamente al portador.",
     "Aumenta mucho la recarga de vida, ademas aumenta tu velocidad.",
 ]
@@ -1595,10 +2238,11 @@ var estados = [
         mod = node[0]
         var spr = node[1]
         spr.style.filter = "drop-shadow(2px 10px 16px red) hue-rotate(30deg)"
-        mod.stat.atq *= 0.75
+        mod.stat.atq *= 0.5
+        mod.stat.raf *= 0.5
         let con = setInterval(() => {
             if (mod.estado == 7) {
-                quitarVida(mod, "1")
+                quitarVida(mod, "0.5")
             } else {
                 window.clearInterval(con)
             }
@@ -1632,10 +2276,12 @@ var estados = [
         mod = node[0]
         var spr = node[1]
         spr.style.filter = "drop-shadow(2px 10px 16px skyblue) hue-rotate(30deg)"
-        mod.stat.raf *= 0.75
+        mod.buffs.regen *= 0.5
+        mod.buffs.shield *= 0.5
+        mod.timer = mod.tiempo
         let con = setInterval(() => {
             if (mod.estado == 10) {
-                quitarVida(mod, "1")
+                quitarVida(mod, "0.5")
             } else {
                 window.clearInterval(con)
             }
@@ -1650,9 +2296,7 @@ var estados = [
         spr.style.filter = "drop-shadow(2px 10px 16px purple) hue-rotate(30deg)"
         let con = setInterval(() => {
             if (mod.estado == 11) {
-                let veneno = mod.veneno || 1
-                mod.veneno = veneno*2
-                quitarVida(mod, veneno+"")
+                quitarVida(mod, "1")
             } else {
                 window.clearInterval(con)
                 mod.veneno = 0
@@ -1672,6 +2316,24 @@ var estados = [
         else
         mod.regen *= 3
         mod.stat.vel *= 1.5
+        return mod
+    },
+    function (mod) {
+        mod = estados[0](mod)
+        var node = retMast(mod)
+        mod = node[0]
+        var spr = node[1]
+        spr.style.filter = "drop-shadow(2px 10px 16px purple) hue-rotate(30deg)"
+        let con = setInterval(() => {
+            if (mod.estado == 11) {
+                let veneno = mod.veneno || 0.5
+                mod.veneno = veneno*2
+                quitarVida(mod, veneno+"")
+            } else {
+                window.clearInterval(con)
+                mod.veneno = 0
+            }
+        }, 100);
         return mod
     },
 ]

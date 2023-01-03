@@ -14,7 +14,7 @@ var personajes = {
             raf: 1,
             res: 2,
         },
-        h: 120,
+        h: 100,
         poderes: [14, 15],
         basico: {
             damage: 30,
@@ -35,7 +35,7 @@ var personajes = {
         edad: "Erizo",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
+            mana: 100, charge: 2, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
         },
         stat: {
             vel: 1,
@@ -47,7 +47,7 @@ var personajes = {
             raf: 1,
             res: 1.8,
         },
-        h: 120,
+        h: 70,
         poderes: [11, 12],
         basico: {
             damage: 35,
@@ -64,7 +64,7 @@ var personajes = {
         ulti: 0,
         method: 1,
         evol: "quilladin",
-        param: 16,
+        param: 8,
     },
     quilladin: {
         vida: 70,
@@ -73,7 +73,7 @@ var personajes = {
         edad: "Erizo",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
+            mana: 100, charge: 2, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
         },
         stat: {
             vel: 1,
@@ -101,7 +101,7 @@ var personajes = {
         ulti: 0,
         method: 1,
         evol: "chesnaught",
-        param: 20,
+        param: 12,
     },
     chesnaught: {
         vida: 70,
@@ -110,7 +110,7 @@ var personajes = {
         edad: "Corazaespín",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
+            mana: 100, charge: 2, mejora: "def",  mana2: 30, poten: 4, nombre: "Pinchos fuertes", count: 20
         },
         stat: {
             vel: 1,
@@ -145,7 +145,7 @@ var personajes = {
         edad: "Cerdo fuego",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "atq",  mana2: 30, poten: 4, nombre: "Grasa en llamas", count: 20
+            mana: 100, charge: 2, mejora: "atq",  mana2: 30, poten: 4, nombre: "Grasa en llamas", count: 20
         },
         stat: {
             vel: 1.2,
@@ -157,7 +157,7 @@ var personajes = {
             raf: 1.3,
             res: 1.5,
         },
-        h: 150,
+        h: 70,
         poderes: [27, 28],
         basico: {
             damage: 30,
@@ -174,7 +174,7 @@ var personajes = {
         ulti: 0,
         method: 1,
         evol: "pignite",
-        param: 18,
+        param: 8,
     },
     pignite: {
         vida: 100,
@@ -183,7 +183,7 @@ var personajes = {
         edad: "Cerdo fuego",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "atq",  mana2: 30, poten: 4, nombre: "Grasa en llamas", count: 20
+            mana: 100, charge: 2, mejora: "atq",  mana2: 30, poten: 4, nombre: "Grasa en llamas", count: 20
         },
         stat: {
             vel: 1.4,
@@ -196,7 +196,7 @@ var personajes = {
             res: 2,
         },
         poderes: [29, 30],
-        h: 150,
+        h: 100,
         basico: {
             damage: 30,
             distancia: 3,
@@ -212,7 +212,7 @@ var personajes = {
         ulti: 0,
         method: 1,
         evol: "emboar",
-        param: 18,
+        param: 13,
     },
     emboar: {
         vida: 100,
@@ -220,7 +220,7 @@ var personajes = {
         rol: "agil",
         edad: "Cerdo fuego",
         sistema: 2,
-        canal: {tanques: [1, 1, 1], carga: [5, 10, 15], efectos: [33, 33, 33], color:"255, 0, 0, "},
+        canal: {tanques: [1, 1, 1], carga: [10, 20, 25], efectos: [33, 33, 33], color:"255, 0, 0, "},
         stat: {
             vel: 1.5,
             salto: 1,
@@ -232,7 +232,7 @@ var personajes = {
             res: 2.5,
         },
         poderes: [31, 32],
-        h: 150,
+        h: 120,
 
         basico: {
             damage: 30,
@@ -255,7 +255,7 @@ var personajes = {
         edad: "Fauces",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
+            mana: 100, charge: 2, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
         },
         stat: {
             vel: 1,
@@ -267,7 +267,7 @@ var personajes = {
             raf: 1,
             res: 1.5,
         },
-        h: 120,
+        h: 70,
         poderes: [38, 39],
         basico: {
             damage: 30,
@@ -285,8 +285,8 @@ var personajes = {
         ultiComb: 0,
         ulti: 0,
         method: 1,
-        evol: "pignite",
-        param: 18,
+        evol: "croconaw",
+        param: 8,
     },
     croconaw: {
         vida: 100,
@@ -295,7 +295,7 @@ var personajes = {
         edad: "Fauces",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
+            mana: 100, charge: 2, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
         },
         stat: {
             vel: 1.1,
@@ -308,7 +308,6 @@ var personajes = {
             res: 2.4,
         },
         poderes: [41, 40],
-        h: 120,
         basico: {
             damage: 30,
             distancia: 3,
@@ -325,8 +324,8 @@ var personajes = {
         ultiComb: 0,
         ulti: 0,
         method: 1,
-        evol: "emboar",
-        param: 18,
+        evol: "feraligatr",
+        param: 12,
     },
     feraligatr: {
         vida: 120,
@@ -335,7 +334,7 @@ var personajes = {
         edad: "Fauces",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
+            mana: 100, charge: 2, mejora: "regen",  mana2: 30, poten: 4, nombre: "Regen acua", count: 20
         },
         stat: {
             vel: 1.2,
@@ -361,7 +360,7 @@ var personajes = {
             class: 2,
             transis: visses[9]
         },
-        hab: 16,
+        hab: 15,
         sprs: 14,
         ultiTime: 30,
         ulti: 5,
@@ -373,7 +372,7 @@ var personajes = {
         edad: "Titere",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "vat",  mana2: 30, poten: 4, nombre: "Rencores pasados", count: 20
+            mana: 100, charge: 2, mejora: "vat",  mana2: 30, poten: 4, nombre: "Rencores pasados", count: 20
         },
         stat: {
             vel: 1,
@@ -385,7 +384,7 @@ var personajes = {
             raf: 1,
             res: 1,
         },
-        h: 120,
+        h: 70,
         poderes: [5, 6],
         basico: {
             damage: 30,
@@ -402,9 +401,9 @@ var personajes = {
         sprs: 3,
         ultiComb: 0,
         ulti: 0,
-        method: 1,
+        method: 3,
         evol: "banette",
-        param: 18,
+        param: 10,
        
     },
     banette: {
@@ -414,7 +413,7 @@ var personajes = {
         edad: "Marioneta",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "vat",  mana2: 30, poten: 4, nombre: "Rencores pasados", count: 20, especial: [
+            mana: 100, charge: 2, mejora: "vat",  mana2: 30, poten: 4, nombre: "Rencores pasados", count: 20, especial: [
                 "buffs", {vel: 1.5, atq: 1.5},
                 "timer", 80
             ]
@@ -430,6 +429,7 @@ var personajes = {
             res: 2,
         },
         poderes: [1, 2],
+        h: 80,
         basico: {
             damage: 30,
             distancia: 3,
@@ -453,7 +453,7 @@ var personajes = {
         edad: "Raton",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "crit",  mana2: 30, poten: 4, nombre: "Impulsividad", count: 20
+            mana: 100, charge: 2, mejora: "crit",  mana2: 30, poten: 4, nombre: "Impulsividad", count: 20
         },
         stat: {
             vel: 1.2,
@@ -482,9 +482,9 @@ var personajes = {
         sprs: 2,
         ultiComb: 0,
         ulti: 0,
-        method: 1,
+        method: 3,
         evol: "raticate",
-        param: 10,
+        param: 8,
     },
     raticate: {
         vida: 100,
@@ -493,7 +493,7 @@ var personajes = {
         edad: "Raton",
         sistema: 1,
         canal: {
-            mana: 100, charge: 5, mejora: "crit",  mana2: 30, poten: 4, nombre: "Impulsividad", count: 20
+            mana: 100, charge: 2, mejora: "crit",  mana2: 30, poten: 4, nombre: "Impulsividad", count: 20
         },
         stat: {
             vel: 1.5,
@@ -505,7 +505,7 @@ var personajes = {
             raf: 1,
             res: 2,
         },
-        h: 160,
+        h: 100,
         poderes: [9, 10],
         basico: {
             damage: 30,
@@ -520,6 +520,199 @@ var personajes = {
         ultiTime: 20,
         ulti: 2,
     },
+    gastly: {
+        vida: 80,
+        clan: "espectro",
+        rol: "agil",
+        edad: "Gas",
+        sistema: 1,
+        canal: {
+            mana: 100, charge: 2, mejora: "raf",  mana2: 30, poten: 4, nombre: "Travesuras", count: 20
+        },
+        stat: {
+            vel: 1.4,
+            salto: 1,
+            caida: 1,
+            def: 1,
+            atq: 1,
+            color: "purple",
+            raf: 1.8,
+            res: 1,
+        },
+        poderes: [48, 49],
+        basico: {
+            damage: 30,
+            distancia: 3,
+            tipo: 0,
+            combo: 3,
+            efecto: {res: 0.9, timer: 3},
+            anim: "<div style='background-color: transparent; color: pink; margin-top: 40px' class='medialuna'></div>",
+            vis: visses[0],
+            class: 2,
+            transis: visses[9]
+        },
+        hab: 22,
+        sprs: 20,
+        ultiComb: 0,
+        ulti: 0,
+        method: 1,
+        evol: "haunter",
+        param: 8,
+    },
+    haunter: {
+        vida: 80,
+        clan: "espectro",
+        rol: "agil",
+        edad: "Gas",
+        sistema: 1,
+        canal: {
+            mana: 100, charge: 2, mejora: "raf",  mana2: 30, poten: 4, nombre: "Travesuras", count: 20
+        },
+        stat: {
+            vel: 1.5,
+            salto: 1,
+            caida: 1,
+            def: 1.2,
+            atq: 1,
+            color: "purple",
+            raf: 2.5,
+            res: 1.3,
+        },
+        h: 100,
+        poderes: [50, 51],
+        basico: {
+            damage: 30,
+            distancia: 3,
+            tipo: 0,
+            combo: 3,
+            efecto: {res: 0.9, timer: 3},
+            anim: "<div style='background-color: transparent; color: pink; margin-top: 40px' class='medialuna'></div>",
+            vis: visses[0],
+            class: 2,
+            transis: visses[9]
+        },
+        hab: 22,
+        sprs: 21,
+        ultiComb: 0,
+        ulti: 0,
+        method: 1,
+        evol: "gengar",
+        param: 14,
+    },
+    gengar: {
+        vida: 80,
+        clan: "espectro",
+        rol: "agil",
+        edad: "sombra",
+        sistema: 1,
+        canal: {
+            mana: 100, charge: 2, mejora: "raf",  mana2: 30, poten: 4, nombre: "Travesuras", count: 20
+        },
+        stat: {
+            vel: 1.5,
+            salto: 1,
+            caida: 1,
+            def: 2,
+            atq: 1,
+            color: "purple",
+            raf: 3.1,
+            res: 2.1,
+        },
+        h: 120,
+        poderes: [52, 53],
+        basico: {
+            damage: 30,
+            distancia: 3,
+            tipo: 0,
+            combo: 3,
+            efecto: {res: 0.9, timer: 3},
+            anim: "<div style='background-color: transparent; color: pink; margin-top: 40px' class='medialuna'></div>",
+            vis: visses[0],
+            class: 2,
+            transis: visses[9]
+        },
+        hab: 22,
+        sprs: 22,
+        ultiTime: 10,
+        ulti: 6,
+    },
+    petilil: {
+        vida: 80,
+        clan: "planta",
+        rol: "ofensivo",
+        edad: "Bulbo",
+        sistema: 1,
+        canal: {
+            mana: 100, charge: 2, mejora: "raf",  mana2: 30, poten: 4, nombre: "Ramaje", count: 20
+        },
+        stat: {
+            vel: 1,
+            salto: 1,
+            caida: 1,
+            def: 1.2,
+            atq: 1,
+            color: "yellowgreen",
+            raf: 1.7,
+            res: 1.2,
+        },
+        h: 70,
+        poderes: [55, 56],
+        basico: {
+            damage: 30,
+            distancia: 6,
+            tipo: 0,
+            combi: 3,
+            estado: {salto: 1.2, timer: 3},
+            anim: "<div class='petalo'></div>",
+            vis: visses[0],
+            class: 2,
+            transis: visses[9]
+        },
+        hab: 24,
+        sprs: 23,
+        ultiComb: 0,
+        ulti: 0,
+        method: 1,
+        evol: "lilligant",
+        param: 14,
+    },
+    lilligant: {
+        vida: 120,
+        clan: "planta",
+        rol: "ofensivo",
+        edad: "Bulbo",
+        sistema: 1,
+        canal: {
+            mana: 100, charge: 2, mejora: "raf",  mana2: 30, poten: 4, nombre: "Ramaje", count: 20
+        },
+        stat: {
+            vel: 1.2,
+            salto: 1.5,
+            caida: 1,
+            def: 1.5,
+            atq: 1,
+            color: "yellowgreen",
+            raf: 2.5,
+            res: 1.5,
+        },
+        h: 100,
+        poderes: [57, 58],
+        basico: {
+            damage: 30,
+            distancia: 6,
+            tipo: 0,
+            combi: 3,
+            estado: {salto: 1.2, timer: 3},
+            anim: "<div class='petalo'></div>",
+            vis: visses[0],
+            class: 2,
+            transis: visses[9]
+        },
+        hab: 24,
+        sprs: 24,
+        ultiTime: 25,
+        ulti: 8,
+    }
 }
 function tipos(tipo) {
     var tips = {
@@ -536,7 +729,8 @@ function tipos(tipo) {
         arbol: t([1, 12], [2, 3, 10, 14, 15, 9], [4, 5, 11, 12, 13, 17]),
         fuego: t([10], [4, 5, 11], [6, 8, 10, 12, 15, 9], []),
         llamas: t([10, 1], [2, 4, 11, 14], [8, 10, 12, 15, 17], [6]),
-        agua: t([11], [12, 13], [8, 10, 11, 15])
+        agua: t([11], [12, 13], [8, 10, 11, 15]),
+        espectro: t([7, 3], [4, 14, 17, 7], [12, 9, 6, 3], [0, 1])
     }
     return tips[tipo]
     function t(tipo=[0], debil=[], resis=[], inmune=[]) {
@@ -603,13 +797,39 @@ var entidades = {
             atq: 1.2,
             color: "black",
             hab: 0,
-            h: 120,
+            h: 70,
             huevo: "amorfo",
             tipo: 4
         },
         tipos("fantasma"),
         3,
         [46, 6]
+    ],
+    petilil: [
+        {
+            def: 1.2,
+            color: "yellowgreen",
+            raf: 1.7,
+            res: 1.2,
+            hab: 24,
+            tipo: 6,
+            h: 70,
+            huevo: "planta",
+            basico: {
+                damage: 30,
+                distancia: 6,
+                tipo: 0,
+                combi: 3,
+                estado: {salto: 1.2, timer: 3},
+                anim: "<div class='petalo' style='--c: red'></div>",
+                vis: visses[0],
+                class: 2,
+                transis: visses[9]
+            }
+        },
+        tipos("planta"),
+        23,
+        [55, 56]
     ],
     dana: [
         {
@@ -638,6 +858,21 @@ var entidades = {
         {},
         17,
         [0, 0]
+    ],
+    cazabichos: [
+        {
+            color: "yellowgreen",
+            hab: 0,
+            h: 120
+        },{},19,[0, 0]
+    ],
+    chica: [
+        {
+            color: "pink",
+            hab: 0,
+            h: 120
+        },
+        {},18,[0, 0]
     ],
 }
 function bp(nombre) {
