@@ -90,7 +90,6 @@ var app = (()=> {
         jimi.innerHTML = ""
         tras.guardar = 0
         gamer = Object.assign(gamer, personajes[nombre])
-        cargarPasiva(nombre)
         if(gamer.clan)
         gamer.tipos = tipos(gamer.clan)
         loadSystem(personajes[nombre])
@@ -105,6 +104,7 @@ var app = (()=> {
         gamer.count = [0, 0, 0]
         gamer.combCount = 0
         powImage()
+        cargarPasiva(nombre)
         if (gamer.w) {
             jugador.style.width = gamer.w+"px"
         }
@@ -678,7 +678,7 @@ var app = (()=> {
         pasivas[nombre].push(efecto)
         else
         pasivas[nombre] = [efecto]
-        console.log(efecto)
+        gamer.nombre = nombre
    }
    function desactivatePower(poder = poderes[0]) {
         if (poder.changes ) {
@@ -1685,31 +1685,7 @@ var callendo = false
         nivel = n
         else
         nivel = niveles[n]
-        if (nivel.ciudad == true && gamer.rol != "entrenador") {
-            let rol = buscarRol("entrenador")
-            if (rol > -1) {
-                cambioPersonaje(rol)
-            } else {
-                nivel = antes
-                return
-            }
-        }
-        if (nivel.batalla && gamer.rol == "entrenador") {
-            let rol = buscarRol("pokemon")
-            if (rol > -1) {
-                cambioPersonaje(rol)
-            } else {
-                nivel = antes
-                return
-            }
-        }
-        if (nivel.guardado) {
-            gamer.zona = n
-            if (gamer.method == 1) {
-                 gamer.evo = 0
-            }
-            localStorage.setItem("poke", JSON.stringify(gamer)) 
-        }
+        
         pantalla.innerHTML = ""
         for (let i = 0; i < mods.length; i++) {
             const mod = mods[i];
@@ -2169,6 +2145,31 @@ var callendo = false
         especiale =1
         if (nivel.fun > -1) {
             accion[nivel.fun]()
+        }
+        if (nivel.ciudad == true && gamer.rol != "entrenador") {
+            let rol = buscarRol("entrenador")
+            if (rol > -1) {
+                cambioPersonaje(rol)
+            } else {
+                nivel = antes
+                return
+            }
+        }
+        if (nivel.batalla && gamer.rol == "entrenador") {
+            let rol = buscarRol("pokemon")
+            if (rol > -1) {
+                cambioPersonaje(rol)
+            } else {
+                nivel = antes
+                return
+            }
+        }
+        if (nivel.guardado) {
+            gamer.zona = n
+            if (gamer.method == 1) {
+                 gamer.evo = 0
+            }
+            localStorage.setItem("poke", JSON.stringify(gamer)) 
         }
         public.mods = mods
         //console.log(ubicacion)

@@ -286,7 +286,7 @@ var acciones = [
             fila.appendChild(td)
             celdas++
             nodo.onclick =()=> {
-                if (app.gamer.personajes.includes(nombre) == false) {
+                if (app.gamer.personajes.includes(nombre) == false ) {
                     return
                 }
                 tabla.style.display = "none"
@@ -1279,7 +1279,6 @@ var acciones = [
         }
     },
     function (param) {// 11
-        console.log(param)
         if (param == 3) {
             lock = true
             app.mensaje(["¿Bueno entonces, que quieres hacer?"], true, ["Comprar", 11, 1, "Vender", 11, 2, "Nada", 0, 0])
@@ -1565,7 +1564,7 @@ let batallas = [
     { // 1
         batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 3,
         salida: 0,
         nivel: [4, 5],
         piso: "violet",
@@ -1588,7 +1587,7 @@ let batallas = [
     {//2
          batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 4,
         salida: 0,
         nivel: [4, 5],
         piso: "violet",
@@ -1610,7 +1609,7 @@ let batallas = [
     {// 3
         batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 6,
         salida: 0,
         nivel: [4, 5],
         piso: "violet",
@@ -1634,7 +1633,7 @@ let batallas = [
      {// 4
         batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 6,
         salida: 0,
         nivel: [5, 5],
         piso: "violet",
@@ -1658,7 +1657,7 @@ let batallas = [
      {// 5
         batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 6,
         salida: 0,
         nivel: [5, 6],
         piso: "violet",
@@ -1682,7 +1681,7 @@ let batallas = [
      {// 6
         batalla: true,
         salvaje: false,
-        enemys: 2,
+        enemys: 6,
         salida: 0,
         nivel: [6, 7],
         piso: "violet",
