@@ -1,4 +1,4 @@
-.casa, .tienda {
+.house, .shop {
     width: 50px;
     height: 100px;
     border: none;
@@ -21,11 +21,51 @@
                 -100px -220px 0px 1px;
 
 }
-.casa {
+.house {
     color: brown
 }
-.tienda {
+.shop {
     color: blue
+}
+.cesped {
+    background-image: url(../bgs/cesped.png);
+    background-size: 100px;
+}
+.ceramica {
+    background-image: url(../bgs/ceramica.png);
+    background-size: 130px;
+    border-radius: 50px;
+    border: solid 5px rgb(134, 101, 35);
+}
+.casa, .tienda, .centro {
+    border: none;
+
+}
+.casa::before, .tienda::before {
+    content: "";
+    width: 200px;
+    height: 300px;
+    background-image: url(../bgs/casa.png);
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    top: -190px;
+    left: -53px;
+}
+.tienda::before {
+    left: -80px;
+    background-image: url(../bgs/casaVerde.png);
+}
+.centro::before {
+    content: "";
+    width: 270px;
+    height: 300px;
+    background-image: url(../bgs/centro.png);
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    top: -197px;
+    left: -78px;
 }
 .lab {
     width: 50px;

@@ -35,6 +35,7 @@ var niveles = [
         color: "green",
         piso: "rgb(180, 255, 200)",
         largo: 6000,
+        ciudad: true,
         salvaje: true,
         letrero: "Ruta Umbral",
         music: "ftdcPiano",
@@ -69,11 +70,7 @@ var niveles = [
         ]
     },
     {//2
-        color: "brown",
-        piso: "rgb(150, 100, 100)",
-        largo: 1000,
-        x: 300,
-        y: 0,
+        
         pisos: [
             [1000, 400, 400, 0],
 
@@ -99,12 +96,13 @@ var niveles = [
         ciudad: true,
         music: "littlerootRemix",
         letrero: "Pueblo Silvis",
+        image: "bgs/silvis.png",
         pisos: [
-            [2100, 600, 200, 0],
+            [2100, 600, 200, 0, ".cesped"],
             [50, 100, 400, 200, "transparent", "casa", "none"],
             [50, 100, 400, 600, semiblack, "casa", "0"],
             [50, 100, 400, 1000, semiblack, "tienda", 4],
-            [50, 100, 400, 1400, semiblack, "lab", 5],
+            [50, 100, 400, 1400, semiblack, "centro", 5],
             [100, 100, 500, 2000, semiblack, "wrap", 1]
 
         ],
@@ -113,11 +111,11 @@ var niveles = [
 
         ],
         carteles: [
-            [1900, 100, 50, 500, "#rgb(200, 200, 190)", false, 0, false, 0],
-            [300, 150, 70, 200, "#transparent", true, 1, true, 0],
-            [300, 150, 470, 200, "#transparent", true, 1, true, 0],
-            [300, 150, 870, 200, "#transparent", true, 2, true, 0],
-            [400, 150, 1170, 200, "#transparent", true, 3, true, 0],
+            [1900, 100, 50, 500, ".ceramica", false, 0, false, 0],
+            [300, 200, 70, 200, "#transparent", true, 1, true, 0],
+            [300, 200, 470, 200, "#transparent", true, 1, true, 0],
+            [300, 200, 870, 200, "#transparent", true, 2, true, 0],
+            [400, 200, 1240, 200, "#transparent", true, 3, true, 0],
             [40, 100, 70, 600, ".cartelPueblo", true, 15, true, 1]
 
         ]
@@ -176,7 +174,8 @@ var wraps = [
     "wrap",
     "casa",
     "tienda",
-    "lab"
+    "lab",
+    "centro"
 ]
 var puertas = [
     "puerta"
@@ -910,7 +909,7 @@ var acciones = [
                                     boton2.onclick = ()=> {
                                         if (load == true && (app.gamer.exp[config.huevo] > 0)) {
                                             if(arreglo[em] ) {
-                                                if(arreglo[em] <= config.movs[em].max)
+                                                if(arreglo[em] < config.movs[em].max)
                                                 arreglo[em]++
                                             }
                                             else if (select.pasivas.length < 8){
@@ -924,7 +923,7 @@ var acciones = [
                                                     }
                                                 }
                                             }
-                                            if (select.pasivas.length < 8)
+                                            if (arreglo[em] < config.movs[em].max)
                                             app.gamer.exp[config.huevo]--
                                             cargarPasiva()
                                         }
@@ -1374,7 +1373,7 @@ var acciones = [
             return
         }
         app.mensaje(["Hola, @nick. Hace un lindo dia ¿no? Creo que la profesora Dana te estaba buscando hoy",
-        "Que bonito tejado amarillo le pusieron al laboratorio ¿no?"])
+        "Esta en el centro pokemon, aun lo estan preparando"])
     }
 ]
 function miniCreator(x, y) {
@@ -1390,8 +1389,8 @@ function miniCreator(x, y) {
 
 }
 
-function gamerVisible() {
-    if (app.gamer.buffs.visible < 1 || app.gamer.visible == false) {
+function gamerVisible(mod) {
+    if (app.gamer.buffs.visible < 1 || (app.gamer.visible > 0 && mod.visible != app.gamer.visible)) {
         return false
     }
     return true
@@ -1405,12 +1404,12 @@ var movs = [
         if (!mod.movBoo) {
             if (mod.ofMove%(mod.pasos*2) < mod.pasos) {
                 mod.x -= (mod.stat.vel*mod.buffs.vel)*10
-                if(gamerVisible())
+                if(gamerVisible(mod))
                 r = [false, true]
             }
             if (mod.ofMove%(mod.pasos*2) >= mod.pasos ) {
                 mod.x += (mod.stat.vel*mod.buffs.vel)*10
-                if(gamerVisible())
+                if(gamerVisible(mod))
                 r = [true, false]
             }
             
@@ -1427,7 +1426,7 @@ var movs = [
         } 
         if (!mod.movBoo) {
             var movimiento = (mod.stat.vel*mod.buffs.vel)*10
-            if (gamerVisible()) {
+            if (gamerVisible(mod)) {
                 if ((gamer.x+100) < mod.x+(mod.pasos)*10 && (gamer.x+100) > mod.x-(mod.pasos)*10) {
                     if (gamer.x - mod.x < 0) {
                         mod.x -= (mod.stat.vel*mod.buffs.vel)*10
@@ -1445,14 +1444,14 @@ var movs = [
                 }
                 
             } else {
-                r = movs[0](mod)
+                r = movs[1](mod)
             }
         }
         return r
     },
     function (mod) {//3
         var r = [false, false]
-        if (!mod.movBoo && gamerVisible()) {
+        if (!mod.movBoo && gamerVisible(mod)) {
             let gamer = app.gamer
             
             if (gamer.x < mod.x+(mod.pasos)*10 && gamer.x > mod.x-(mod.pasos)*10) {
@@ -1524,7 +1523,7 @@ var movs = [
     },
     function (mod) { // 6
         let r = [false, false]
-        if (!mod.movBoo && gamerVisible()) {
+        if (!mod.movBoo && gamerVisible(mod)) {
             let gamer = app.gamer
             let movimiento = (mod.stat.vel*mod.buffs.vel)*10
             if (gamer.x+500 < mod.x+(mod.pasos)*10 && gamer.x+500 > mod.x-(mod.pasos)*10) {
@@ -1579,7 +1578,9 @@ let batallas = [
             [6, "petilil", 1400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
         ],
        
       
@@ -1603,7 +1604,9 @@ let batallas = [
             [6, "petilil", 1400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
         ],
     },
     {// 3
@@ -1620,14 +1623,16 @@ let batallas = [
         },
         npcs: [
             [2, "rattata", 1300, 500, 100, true, 0],
-            [6, "petilil", 1500, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
+            [6, "petilil", 3500, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
         ]
     },
      {// 4
@@ -1644,14 +1649,16 @@ let batallas = [
         },
         npcs: [
             [2, "rattata", 1300, 500, 100, true, 0],
-            [6, "petilil", 1500, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
+            [6, "petilil", 3500, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
         ]
     },
      {// 5
@@ -1668,14 +1675,17 @@ let batallas = [
         },
         npcs: [
             [2, "rattata", 1300, 500, 100, true, 0],
-            [6, "petilil", 1500, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
+            [6, "petilil", 3500, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
+
         ]
     },
      {// 6
@@ -1692,14 +1702,17 @@ let batallas = [
         },
         npcs: [
             [2, "rattata", 1300, 500, 100, true, 0],
-            [6, "petilil", 1500, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
-            [2, "rattata", 1200, 500, 100, true, 0],
-            [6, "petilil", 1400, 500, 400, true, 0],
+            [6, "petilil", 3500, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
+            [2, "rattata", 2200, 500, 100, true, 0],
+            [6, "petilil", 3400, 500, 400, true, 0],
         ],
         pisos: [
-            "piso"
+            "piso",
+            [500, 100, 200, 1000, "green", "oculto", 1],
+            [500, 100, 600, 1000, "green", "oculto", 2],
+
         ]
     },
 ]

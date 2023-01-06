@@ -92,7 +92,6 @@ var app = (()=> {
         gamer = Object.assign(gamer, personajes[nombre])
         if(gamer.clan)
         gamer.tipos = tipos(gamer.clan)
-        loadSystem(personajes[nombre])
         jugador.firstChild.src = galeria[gamer.sprs].normal
         img.firstChild.src = galeria[gamer.sprs].normal
         gamer.stat = Object.assign({}, personajes[nombre].stat)
@@ -103,8 +102,9 @@ var app = (()=> {
         gamer.estado = 0
         gamer.count = [0, 0, 0]
         gamer.combCount = 0
-        powImage()
         cargarPasiva(nombre)
+        powImage() 
+        loadSystem(personajes[nombre])
         if (gamer.w) {
             jugador.style.width = gamer.w+"px"
         }
@@ -141,6 +141,7 @@ var app = (()=> {
         stund: false,
         regen: 1,
         nivel: 0,
+        visible: 0,
         zona: 0,
         estado: 0,
         objetos: [4, 2],
@@ -266,7 +267,7 @@ var app = (()=> {
                         if (select.nivel >= gamer.param && !select.evol) {
                             pasivas[nombre][i].evol = true
                             if (!gamer.personajes.includes(gamer.evol)) {
-                                app.giveChara(gamer.evol)
+                                public.giveChara(gamer.evol)
                             }
                             evolucion(gamer.evol, nombre)
                             return
@@ -300,6 +301,7 @@ var app = (()=> {
                         if (pas.activa == pas.pasivas[j] && (p.min <= pas.nivel || !p.min) ) {
                             if(p.activa){
                                 gamer.poderes[2] = p.activa
+                                personajes[nombre].poderes[2] = p.activa
                             }
                         }
                         for (let l = 0; l < k.length; l++) {
@@ -307,7 +309,6 @@ var app = (()=> {
                             if(!claves.includes(stat)){
                                 if(gamer.pasiva[stat])
                                 gamer.pasiva[stat] += p[stat] * parseFloat(v) 
-                                
                             } 
                             else if(stat == "pasiva" && (p.min <= pas.nivel || !p.min) && p.pasiva)
                             gamer.pasiva.efectos.push(p.pasiva)
@@ -890,6 +891,7 @@ var app = (()=> {
         jugador.style.marginTop = (100 - (personajes[gamer.nombre].h || 100))+"px"
         obj1()
         buffRestore()
+        cargarPasiva(gamer.nombre)
         loadSystem(personajes[gamer.nombre], true)
         powImage()
         lock = false
@@ -1225,6 +1227,9 @@ var app = (()=> {
                         gamer.buffs[key] /= obj.caract[key]
                     }
                 }
+                saveObj = 0
+                if(pasivas[gamer.nombre])
+                pasivas[gamer.nombre][obtenerPasiva(gamer.nombre)].obj = 0
                 gamer.obj = 0
                 obj = objetos[0]
                 accionTecla.KeyW_Down()
@@ -1444,9 +1449,9 @@ var callendo = false
                     acciones[clases[2]](gamer, mods, 0)
                 }
                 if (clases.includes("oculto")) {
-                    gamer.visible = false
+                    gamer.visible = clases[2] || 1
                 } else {
-                    gamer.visible = true
+                    gamer.visible = 0
                 }
                 if (clases.includes("wrap") && clases[2] != "none") {
                     levelLoad(clases[2])
@@ -1666,8 +1671,8 @@ var callendo = false
     }
     function buscarRol(rol) {
         let pokemon = ["ofensivo", "defensivo", "equilibrado", "agil", "auxiliar"]
-        for (let i = 0; i < app.gamer.equipo.length; i++) {
-            const equipo = personajes[app.gamer.equipo[i]];
+        for (let i = 0; i < gamer.equipo.length; i++) {
+            const equipo = personajes[gamer.equipo[i]];
             if (rol == "pokemon") {
                 if (pokemon.includes(equipo.rol)) {
                     return i
@@ -1703,6 +1708,7 @@ var callendo = false
         move = true
         pantalla.style.marginLeft = "0px"
         pantalla.style.backgroundColor = nivel.color
+        pantalla.style.backgroundImage = ""
         if(accionTecla.KeyE_Down)
         accionTecla.KeyE_Down()
         else 
@@ -1714,7 +1720,7 @@ var callendo = false
        
         if (nivel.image) {
             pantalla.style.backgroundImage = "url("+nivel.image+")"
-        }
+        } 
         pantalla.style.width = nivel.largo+"px"
         for (let i = 0; i < nivel.pisos.length; i++) {
             const element = nivel.pisos[i];
@@ -1763,6 +1769,16 @@ var callendo = false
                         } else 
                         ubicacion[element[3]+h][element[3]+j][2] = 0
 
+                    } else {
+                        if (element[6]) {
+                            ubicacion[element[2]+h][element[3]+j][2] = element[6]
+                        }
+                        if (element[7]) {
+                            ubicacion[element[2]+h][element[3]+j][3] = element[7]
+                        }
+                        if (element[8]) {
+                            ubicacion[element[2]+h][element[3]+j][4] = element[8]
+                        }
                     }
                     if (puertas.includes(clase)) {
                         ubicacion[element[2]+h][element[3]+j][2] = element[6]
@@ -1824,9 +1840,9 @@ var callendo = false
                                     mod.pisar = true
                                 } 
                                 if (clases.includes("oculto")) {
-                                    mod.visible = false
+                                    mod.visible = clases[2] || 1
                                 } else {
-                                    mod.visible = true
+                                    mod.visible = 0
                                 }
                             } 
                         } else {
@@ -1942,7 +1958,7 @@ var callendo = false
                             mod.timer = 1
                         }
                     }
-                    if (mod.buffs.visible < 1 || mod.visible == false) {
+                    if (mod.buffs.visible < 1 || (mod.visible > 0 && mod.visible != gamer.visible)) {
                         mod.spr.style.visibility = "hidden"
                     } else {
                         mod.spr.style.visibility = ""
@@ -2044,27 +2060,35 @@ var callendo = false
         for (let i = 0; i < nivel.carteles.length; i++) {
             const cartel = nivel.carteles[i];
             var tag = "div"
-            if (cartel[4].charAt(0) == "!") {
-                tag = "img"
-            }
+            let val = cartel[4].substring(1)
             
-            var val = cartel[4].substring(1)
+            if (cartel[4].indexOf("!") > -1) {
+                val = cartel[4].substring(cartel[4].indexOf("!")+1)
+            }
+            if (cartel[4].indexOf("+") > -1) {
+                val = cartel[4].substring(cartel[4].indexOf("+")+1)
+
+            }
+
             let nodo = creacion({tag:tag, style:{
                 width:cartel[0]+"px", 
                 height:cartel[1]+"px", 
                 left: cartel[2]+"px", 
                 top:cartel[3]+"px",
             }, class: "cartel"})
-
             nodo.style.zIndex = cartel[8]
-            if (tag == "div") {
-                if (cartel[4].charAt(0) == ".") {
-                    nodo.classList.add(val)
-                } else
-                nodo.style.backgroundColor = val
-            } else {
-                nodo.src = val
+            if (cartel[4].charAt(0) == ".") {
+                nodo.classList.add(val)
+            } else if(cartel[4].indexOf("!") > -1)
+            nodo.style.backgroundImage = "url("+val+")"
+            else if(cartel[4].indexOf("+") > -1) {
+                nodo.style.backgroundImage = "url("+val+")"
+                nodo.style.backgroundRepeat = "no-repeat"
+
             }
+
+            nodo.style.backgroundColor = val
+
             var width = cartel[0]
             var height = cartel[1]
             if (width < 100) {
@@ -2137,8 +2161,8 @@ var callendo = false
         }
         if (hab.tipo == 4) {
             hab.caract(gamer, 1)
-            obj1()
         }
+        obj1()
         resetChara()
         move = false
         moveBoo = false
@@ -2451,8 +2475,11 @@ var callendo = false
             }
         }
         var nodo = creacion(pis);
+        if (color.charAt(0) == ".") {
+            nodo.classList.add(color.substring(1))
+        } else
         if (color.charAt(0) == "!") {
-            nodo.style.backgroundImage = "url("+color+")"
+            nodo.style.backgroundImage = "url("+color.substring(1)+")"
         } else {
             nodo.style.backgroundColor = color
         }
@@ -3820,7 +3847,7 @@ var pasos = 0
     let dash = false
     var set2 = setInterval(() => {
         
-        if (gamer.buffs.visible < 1) {
+        if (gamer.buffs.visible < 1 || gamer.visible > 0) {
             jugador.firstChild.style.filter = "opacity(0.5)"
         } else {
             jugador.firstChild.style.filter = ""

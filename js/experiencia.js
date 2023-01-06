@@ -402,7 +402,6 @@ const emblemas = {
             def: 0.08,
             res: 0.08,
             vat: 0.1,
-            vel: 0.02
         }
     },
     gengar: {
@@ -430,7 +429,6 @@ const emblemas = {
             def: 0.1,
             res: 0.1,
             vat: 0.11,
-            vel: 0.02
         }
     },
     petilil: {
@@ -452,7 +450,6 @@ const emblemas = {
             def: 0.01,
             res: 0.01,
             salto: 0.05,
-            vel: 0.01
         },
         huevo: "planta",
         experiencia: 1
@@ -477,7 +474,6 @@ const emblemas = {
             def: 0.08,
             res: 0.08,
             salto: 0.1,
-            vel: 0.05
         },
         huevo: "planta",
         experiencia: 1

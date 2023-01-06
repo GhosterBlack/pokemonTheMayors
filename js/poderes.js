@@ -377,8 +377,8 @@ var poderes = [
         cion: (at=app.gamer, df)=> {
             if (df.stat.huevo && app.nivel().salvaje) {
                 if (df.stat.salud <= 0) {
-                    if (at.obj == 10) {
-                        at.obj = 0
+                    if (at.objetos.includes(10)) {
+                        at.objetos[at.objetos.indexOf(10)] = 0
                         let cria = {
                             nombre: df.especie,
                             codigo: aleatorio(0, 100000),
@@ -1175,7 +1175,7 @@ var poderes = [
         damage: 50,
         tipo: 6,
         distancia: 8,
-        estado: {raf: 1.3, vel: 1.5, timer: 4},
+        estado: {raf: 1.3, vel: 1.1, timer: 4},
         anim: "<div class='petalo' style='--c:green; --b:yellowgreen;'></div>",
         class: 2,
         transis: visses[10],
@@ -1644,7 +1644,7 @@ var objetos = [
     },
     {//10
         nombre: "Pokeball",
-        descripcion: "Mejoran los ataques de los entrenadores, les añaden efectos de captura",
+        descripcion: "Mejoran los ataques de los entrenadores, les añaden efectos de captura.",
         tipo: 4,
         valor: 0,
         caract: {},
